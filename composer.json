@@ -1,0 +1,17 @@
+{
+    "name": "cirrusidentity/simplesamlphp-module-ratelimit",
+    "description": "Ratelimit certain actions, such as username + password login",
+    "type": "simplesamlphp-module",
+    "require": {
+        "simplesamlphp/composer-module-installer": "^1.1"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SimpleSAML\\Test\\Module\\ratelimit\\": "tests/lib"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5",
+        "cirrusidentity/simplesamlphp-test-utils": "dev-master"
+    }
+}
