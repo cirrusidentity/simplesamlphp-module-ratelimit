@@ -4,6 +4,7 @@ namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
+use CirrusIdentity\SSP\Test\MockHttp;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
@@ -16,6 +17,7 @@ class DeviceCookieLimiterTest extends TestCase
 
     protected function setUp(): void
     {
+        test::clean();
         // Stub the setCookie method
         $this->mockHttp = test::double('SimpleSAML\Utils\HTTP', [
             'setCookie' => true,
@@ -37,8 +39,9 @@ class DeviceCookieLimiterTest extends TestCase
         $_COOKIE['deviceCookie'] = $deviceCookie;
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
         $store = Store::getInstance();
+        $store->dump();
         $val = $store->get('array', $key);
-        $this->assertNotNull($val);
+        $this->assertNotNull($val, $key . ' expected');
         $this->assertEquals('user', $val['user']);
         $this->assertEquals(0, $val['count']);
     }
@@ -143,6 +146,8 @@ class DeviceCookieLimiterTest extends TestCase
 
     private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie')
     {
+        $invocations = $this->mockHttp->getCallsForMethod('setCookie');
+        $this->assertCount(1, $invocations, 'Unexpected # of setCookie invocations');
         $args = $this->mockHttp->getCallsForMethod('setCookie')[0];
         $this->assertEquals($cookieName, $args[0]);
         return $args[1];
