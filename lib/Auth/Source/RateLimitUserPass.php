@@ -16,7 +16,10 @@ use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
 use SimpleSAML\Store;
 
-
+/**
+ * Auth source that rate limits user and password attempts
+ * @package SimpleSAML\Module\ratelimit\Auth\Source
+ */
 class RateLimitUserPass extends UserPassBase
 {
 
@@ -72,6 +75,7 @@ class RateLimitUserPass extends UserPassBase
         $method = $class->getMethod('parseAuthSource');
         $method->setAccessible(true);
         $this->delegate = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegateConfig]);
+        assert($this->delegate instanceof UserPassBase);
 
         $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
 
@@ -108,39 +112,65 @@ class RateLimitUserPass extends UserPassBase
      * @param string $username The username the user wrote.
      * @param string $password The password the user wrote.
      * @return array  Associative array with the user's attributes.
+     * @throws Error thrown on wrong password or other errors
      */
     public function login($username, $password)
     {
+        $timeStart = microtime(true);
         if (!$this->allowLoginAttempt($username, $password)) {
             throw new Error('WRONGUSERPASS');
         }
+        $timeDelegateStart = microtime(true);
         try {
             $attributes = $this->delegate->login($username, $password);
-        } catch (\SimpleSAML\Error\Error $e) {
+            $timeDelegateEnd = microtime(true);
+        } catch (Error $e) {
+            $timeDelegateEnd = microtime(true);
             if ($e->getErrorCode() === 'WRONGUSERPASS') {
                 $this->recordFailedAttempt($username, $password);
             }
+            $this->logOverhead($timeStart, $timeDelegateStart, $timeDelegateEnd);
             // rethrow the error so it's not lost
             throw $e;
         }
         $this->recordSuccess($username, $password);
+        $this->logOverhead($timeStart, $timeDelegateStart, $timeDelegateEnd);
         return $attributes;
     }
 
-    public function getRateLimiters(): array
+    /**
+     * @param float $timeStart The time the login method started
+     * @param float $timeDelegateStart The time we started delegating to another authsource
+     * @param float $timeDelegateEnd The time the delegate finished or erred
+     */
+    private function logOverhead(float $timeStart, float $timeDelegateStart, float $timeDelegateEnd)
     {
-        return $this->rateLimiters;
+        $delegateTime = $timeDelegateEnd - $timeDelegateStart;
+        $overHead = (microtime(true) - $timeStart) - $delegateTime;
+        Logger::debug(sprintf("Timer: Rate Limit overhead %f, underlying source took %f", $overHead, $delegateTime));
     }
 
+    /**
+     * Determine if this authentication attempt should be allowed
+     * @param string $username The username submitted
+     * @param string $password The password submitted
+     * @return bool true if it should be allowed, false if it should be blocked
+     */
     public function allowLoginAttempt(string $username, string $password): bool
     {
-        //TODO: how to handle an exception??
         foreach ($this->rateLimiters as $limiter) {
-            $result = $limiter->allow($username, $password);
+            try {
+                $result = $limiter->allow($username, $password);
+            } catch (\Exception $e) {
+                Logger::warning('Limiter error in \'allow\' of ' . get_class($limiter) . ' Error ' . $e->getMessage());
+                continue;
+            }
             switch ($result) {
                 case 'allow':
+                    Logger::debug('User \'' . $username . '\' login attempt allowed by ' . get_class($limiter));
                     return true;
                 case 'block':
+                    Logger::stats('User \'' . $username . '\' login attempt blocked by ' . get_class($limiter));
                     return false;
                 case 'continue':
                     continue;
@@ -152,20 +182,41 @@ class RateLimitUserPass extends UserPassBase
         return true;
     }
 
-
-    private function recordFailedAttempt(string $username, string $password)
+    /**
+     * Record failed authentication in each limiter
+     * @param string $username The user that authenticated
+     * @param string $password The password used for authentication.
+     */
+    private function recordFailedAttempt(string $username, string $password): void
     {
-        //TODO: how to handle an exception??
         foreach ($this->rateLimiters as $limiter) {
-            $limiter->postFailure($username, $password);
+            try {
+                $limiter->postFailure($username, $password);
+            } catch (\Exception $e) {
+                Logger::warning(
+                    'Limiter error in \'postFailure\' of ' . get_class($limiter) . ' Error ' . $e->getMessage()
+                );
+                continue;
+            }
         }
     }
 
-    private function recordSuccess(string $username, string $password)
+    /**
+     * Record successful authentication in each limiter
+     * @param string $username The user that authenticated
+     * @param string $password The password used for authentication.
+     */
+    private function recordSuccess(string $username, string $password): void
     {
-        //TODO: how to handle an exception??
         foreach ($this->rateLimiters as $limiter) {
-            $limiter->postSuccess($username, $password);
+            try {
+                $limiter->postSuccess($username, $password);
+            } catch (\Exception $e) {
+                Logger::warning(
+                    'Limiter error in \'postSuccess\' of ' . get_class($limiter) . ' Error ' . $e->getMessage()
+                );
+                continue;
+            }
         }
     }
 }

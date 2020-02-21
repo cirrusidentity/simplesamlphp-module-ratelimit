@@ -1,13 +1,11 @@
 <?php
 
+use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
-use SimpleSAML\Auth\Source;
-use SimpleSAML\Module\core\Auth\UserPassBase;
 use SimpleSAML\Module\ratelimit\Auth\Source\RateLimitUserPass;
 use SimpleSAML\Store;
-
-use AspectMock\Test as test;
+use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
 
 class RateLimitUserPassTest extends TestCase
 {
@@ -31,7 +29,7 @@ class RateLimitUserPassTest extends TestCase
     {
         //given: an authsource that delegates to AdminPassword
         $authsourceConfig = [
-                'class' => 'ratelimit:RateLimitUserPass',
+                'ratelimit:RateLimitUserPass',
                 'delegate' => [
                     'core:AdminPassword',
                 ],
@@ -66,6 +64,45 @@ class RateLimitUserPassTest extends TestCase
             $this->checkPassword($source, 'admin', 'secret'),
             'Even correct password is locked out'
         );
+    }
+
+    /**
+     * Test that an exception in our limiter doesn't prevent the correct operation of the
+     * auth source
+     */
+    public function testLimiterExceptionDoesntBlockLogins()
+    {
+        $authsourceConfig = [
+            'ratelimit:RateLimitUserPass',
+            'delegate' => [
+                'core:AdminPassword',
+
+            ],
+            'ratelimit' => [
+                0 => [
+                    ExceptionThrowingLimiter::class,
+                ],
+                1 => [
+                    'user',
+                    'window' => 'PT5M',
+                    'limit' => 20
+                ]
+            ]
+        ];
+        $info = [
+            'AuthId' => 'admin'
+        ];
+        $source = new RateLimitUserPass($info, $authsourceConfig);
+        $store = Store::getInstance();
+
+        $this->assertTrue(
+            $this->checkPassword($source, 'admin', 'secret')
+        );
+
+        $this->assertFalse(
+            $this->checkPassword($source, 'admin', 'wrong')
+        );
+        $this->assertEquals(1, $store->get('int', 'ratelimit-user-admin'), "attempt 1");
     }
 
     private function checkPassword(RateLimitUserPass $source, string $username, string $password):bool
