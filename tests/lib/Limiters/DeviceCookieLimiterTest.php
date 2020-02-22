@@ -39,7 +39,7 @@ class DeviceCookieLimiterTest extends TestCase
         $_COOKIE['deviceCookie'] = $deviceCookie;
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
         $store = Store::getInstance();
-        $store->dump();
+//        $store->dump();
         $val = $store->get('array', $key);
         $this->assertNotNull($val, $key . ' expected');
         $this->assertEquals('user', $val['user']);
