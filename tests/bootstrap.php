@@ -50,4 +50,3 @@ function symlinkModulePathInVendorDirectory($target, $link)
 
 symlinkModulePathInVendorDirectory($projectRootDirectory, $modulePath);
 symlinkModulePathInVendorDirectory($projectConfigDirectory, $simplesamlphpConfig);
-

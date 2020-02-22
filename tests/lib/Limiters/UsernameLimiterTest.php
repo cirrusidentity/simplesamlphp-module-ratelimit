@@ -2,7 +2,6 @@
 
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
-
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;

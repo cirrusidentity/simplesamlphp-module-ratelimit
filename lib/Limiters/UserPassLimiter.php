@@ -30,6 +30,4 @@ interface UserPassLimiter
      * @return int The current failure count for this limit
      */
     public function postFailure(string $username, string $password): int;
-
-
 }

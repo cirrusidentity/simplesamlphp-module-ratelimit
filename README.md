@@ -72,3 +72,17 @@ are automatically enabled.
 ## Blocking behavior
 
 When a login attempt is blocked the authsource throws a `WRONGUSERPASS` error.
+
+# Development
+
+Run `phpcs` to check code style
+
+    ./vendor/bin/phpcs --standard=PSR2 lib/ tests/
+
+Run `phpunit` to test
+
+    ./vendor/bin/phpunit
+    
+You can auto correct some findings from phpcs. It is recommended you do this after stage your changes (or maybe even commit) since there is a non-trivial chance it will just mess up your code.
+
+    ./vendor/bin/phpcbf --ignore=somefile.php --standard=PSR2 lib/ tests/

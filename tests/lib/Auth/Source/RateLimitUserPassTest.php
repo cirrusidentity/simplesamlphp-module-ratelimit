@@ -115,5 +115,4 @@ class RateLimitUserPassTest extends TestCase
             return false;
         }
     }
-
 }

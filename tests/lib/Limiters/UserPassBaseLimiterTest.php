@@ -36,6 +36,4 @@ class SampleLimiter extends UserPassBaseLimiter
     {
         return parent::determineWindowExpiration($time);
     }
-
-
 }

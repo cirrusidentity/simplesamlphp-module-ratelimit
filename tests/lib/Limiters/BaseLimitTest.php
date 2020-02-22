@@ -2,7 +2,6 @@
 
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
-
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
@@ -15,7 +14,7 @@ abstract class BaseLimitTest extends TestCase
         InMemoryStore::clearInternalState();
     }
 
-    protected abstract function getLimiter(array $config): UserPassBaseLimiter;
+    abstract protected function getLimiter(array $config): UserPassBaseLimiter;
 
     /**
      *  Test window calculation

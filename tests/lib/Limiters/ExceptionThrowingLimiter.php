@@ -2,7 +2,6 @@
 
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
-
 use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
 
 class ExceptionThrowingLimiter implements UserPassLimiter
