@@ -2,6 +2,11 @@
 
 This module provides functionality to ratelimit aspects of SSP
 
+# Installation
+
+    composer require cirrusidentity/simplesamlphp-module-ratelimit:dev-master
+
+
 # Rate Limiting Auth Source
 
 Any authsource that uses username and password (and also extends `UserPassBase`)
@@ -42,7 +47,7 @@ $config = [
                0 => [
                     'device',
                     'window' => 'P28D',
-                     limit' => 10,
+                    'limit' => 10,
                ],
                1 => [
                     'user',
