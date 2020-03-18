@@ -4,7 +4,7 @@ This module provides functionality to ratelimit aspects of SSP
 
 # Installation
 
-    composer require cirrusidentity/simplesamlphp-module-ratelimit:dev-master
+    composer require cirrusidentity/simplesamlphp-module-ratelimit
 
 
 # Rate Limiting Auth Source
