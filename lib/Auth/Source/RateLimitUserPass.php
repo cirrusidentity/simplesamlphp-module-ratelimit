@@ -173,7 +173,7 @@ class RateLimitUserPass extends UserPassBase
                     Logger::stats('User \'' . $username . '\' login attempt blocked by ' . get_class($limiter));
                     return false;
                 case 'continue':
-                    continue;
+                    continue 2;
                 default:
                     Logger::warning("Unrecognized ratelimit allow() value '$result'");
             }
