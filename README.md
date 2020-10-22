@@ -6,7 +6,6 @@ This module provides functionality to ratelimit aspects of SSP
 
     composer require cirrusidentity/simplesamlphp-module-ratelimit
 
-
 # Rate Limiting Auth Source
 
 Any authsource that uses username and password (and also extends `UserPassBase`)
