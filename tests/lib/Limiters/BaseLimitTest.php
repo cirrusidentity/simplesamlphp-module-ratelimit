@@ -4,11 +4,17 @@ namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 use SimpleSAML\Store;
 
 abstract class BaseLimitTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        Configuration::clearInternalState();
+    }
+
     protected function tearDown(): void
     {
         InMemoryStore::clearInternalState();
