@@ -78,7 +78,10 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
      */
     public function postSuccess(string $username, string $password): void
     {
-        $store = StoreFactory::getInstance();
+        $config = Configuration::getInstance();
+        $storeType = $config->getString('store.type', 'phpsession');
+
+        $store = StoreFactory::getInstance($storeType);
         // Clear old cookie from store
         if ($this->hasDeviceCookieSet()) {
             $key = $this->getRateLimitKey($username, $password);
