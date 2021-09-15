@@ -9,9 +9,9 @@ use SimpleSAML\Utils\Time;
 
 abstract class UserPassBaseLimiter implements UserPassLimiter
 {
-    private const PREAUTH_ALLOW = 'allow';
-    private const PREAUTH_BLOCK = 'block';
-    private const PREAUTH_CONTINUE = 'continue';
+    protected const PREAUTH_ALLOW = 'allow';
+    protected const PREAUTH_BLOCK = 'block';
+    protected const PREAUTH_CONTINUE = 'continue';
 
     /**
      * @var int $limit The limit of attempts
