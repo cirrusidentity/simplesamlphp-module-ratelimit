@@ -25,19 +25,19 @@ class RateLimitUserPass extends UserPassBase
     /**
      * @var UserPassBase The auth source to handle the login
      */
-    private $delegate;
+    private UserPassBase $delegate;
 
     /**
      * @var string The cookie name to use for device cookies
      */
-    private $deviceCookieName;
+    private string $deviceCookieName;
 
     /**
      * @var UserPassLimiter[]
      */
-    private $rateLimiters;
+    private array $rateLimiters;
 
-    const DEFAULT_CONFIG = [
+    private const DEFAULT_CONFIG = [
         0 => [
             'device',
             'window' => 'P28D',

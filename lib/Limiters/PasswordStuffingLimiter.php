@@ -15,7 +15,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
    /**
      * @var int The cost to use with bcrypt
      */
-    private $cost;
+    private int $cost;
 
     public function __construct(Configuration $config)
     {

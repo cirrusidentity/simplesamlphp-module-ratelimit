@@ -18,7 +18,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     /**
      * Test to confirm the password hash is time dependent
      */
-    public function testKeyVariesWithWindow()
+    public function testKeyVariesWithWindow(): void
     {
         $config = [
           'window' => 'PT2S'

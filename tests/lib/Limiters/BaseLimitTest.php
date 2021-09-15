@@ -25,7 +25,7 @@ abstract class BaseLimitTest extends TestCase
     /**
      *  Test window calculation
      */
-    public function testWindowExpiration()
+    public function testWindowExpiration(): void
     {
         $config = [];
         $limiter = $this->getLimiter($config);
@@ -48,7 +48,7 @@ abstract class BaseLimitTest extends TestCase
     /**
      * Test allow interactions
      */
-    public function testAllowAndFailure()
+    public function testAllowAndFailure(): void
     {
         $config = [
             'limit' => 3,
@@ -75,7 +75,7 @@ abstract class BaseLimitTest extends TestCase
     /**
      * By default this is a noop
      */
-    public function testDefaultSuccess()
+    public function testDefaultSuccess(): void
     {
         $limiter = $this->getLimiter([]);
         $username = 'Homer';
@@ -90,7 +90,7 @@ abstract class BaseLimitTest extends TestCase
      */
     abstract public function testKeyVariesWithInput(): void;
 
-    private function getStoreValueFor(string $key)
+    private function getStoreValueFor(string $key): void
     {
         return Store::getInstance()->get('int', 'ratelimit-' . $key);
     }

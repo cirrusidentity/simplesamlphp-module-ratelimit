@@ -3,8 +3,9 @@
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Error;
 use SimpleSAML\Module\ratelimit\Auth\Source\RateLimitUserPass;
-use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
 
 class RateLimitUserPassTest extends TestCase
@@ -25,20 +26,20 @@ class RateLimitUserPassTest extends TestCase
         unset($_COOKIE['deviceCookie']);
     }
 
-    public function testWrapAdminSource()
+    public function testWrapAdminSource(): void
     {
         //given: an authsource that delegates to AdminPassword
         $authsourceConfig = [
-                'ratelimit:RateLimitUserPass',
-                'delegate' => [
-                    'core:AdminPassword',
-                ],
+            'ratelimit:RateLimitUserPass',
+            'delegate' => [
+                'core:AdminPassword',
+            ],
         ];
         $info = [
           'AuthId' => 'admin'
         ];
         $source = new RateLimitUserPass($info, $authsourceConfig);
-        $store = Store::getInstance();
+        $store = StoreFactory::getInstance();
 
         //when: attempting authentication with the correct password
         $this->assertTrue(
@@ -70,7 +71,7 @@ class RateLimitUserPassTest extends TestCase
      * Test that an exception in our limiter doesn't prevent the correct operation of the
      * auth source
      */
-    public function testLimiterExceptionDoesntBlockLogins()
+    public function testLimiterExceptionDoesntBlockLogins(): void
     {
         $authsourceConfig = [
             'ratelimit:RateLimitUserPass',
@@ -105,12 +106,12 @@ class RateLimitUserPassTest extends TestCase
         $this->assertEquals(1, $store->get('int', 'ratelimit-user-admin'), "attempt 1");
     }
 
-    private function checkPassword(RateLimitUserPass $source, string $username, string $password):bool
+    private function checkPassword(RateLimitUserPass $source, string $username, string $password): bool
     {
         try {
             $source->login($username, $password);
             return true;
-        } catch (\SimpleSAML\Error\Error $e) {
+        } catch (Error\Error $e) {
             $this->assertEquals('WRONGUSERPASS', $e->getErrorCode());
             return false;
         }

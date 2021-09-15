@@ -12,7 +12,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
     /**
      * @var string The cookie name to use for device cookies
      */
-    private $deviceCookieName;
+    private string $deviceCookieName;
 
     public function __construct(Configuration $config)
     {
@@ -63,6 +63,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         }
         return $ret['count'];
     }
+
     /**
      * Called after a successful authentication
      * @param string $username The username to check
@@ -86,7 +87,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         $this->setDeviceCookie($cookieId);
     }
 
-    private function setDeviceCookie(?string $cookieValue)
+    private function setDeviceCookie(?string $cookieValue): void
     {
         $params = array(
             'lifetime' => $this->window,
