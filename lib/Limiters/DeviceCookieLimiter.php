@@ -49,8 +49,12 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         if (!$this->hasDeviceCookieSet()) {
             return 0;
         }
+
+        $config = Configuration::getInstance();
+        $storeType = $config->getString('store.type', 'phpsession');
+
         $key = $this->getRateLimitKey($username, $password);
-        $store = StoreFactory::getInstance();
+        $store = StoreFactory::getInstance($storeType);
         $ret = $store->get('array', "ratelimit-$key");
         if ($ret === null || $ret['user'] !== $username) {
             return 0;
