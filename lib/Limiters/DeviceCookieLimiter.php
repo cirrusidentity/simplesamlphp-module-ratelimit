@@ -4,12 +4,11 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
-use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Utils\HTTP;
 
 class DeviceCookieLimiter extends UserPassBaseLimiter
 {
-
     /**
      * @var string The cookie name to use for device cookies
      */
@@ -48,7 +47,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
             return 0;
         }
         $key = $this->getRateLimitKey($username, $password);
-        $store = Store::getInstance();
+        $store = StoreFactory::getInstance();
         $ret = $store->get('array', "ratelimit-$key");
         if ($ret === null || $ret['user'] !== $username) {
             return 0;
@@ -71,7 +70,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
      */
     public function postSuccess(string $username, string $password): void
     {
-        $store = Store::getInstance();
+        $store = StoreFactory::getInstance();
         // Clear old cookie from store
         if ($this->hasDeviceCookieSet()) {
             $key = $this->getRateLimitKey($username, $password);
@@ -95,7 +94,8 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
             'secure'   => Configuration::getConfig()->getBoolean('session.cookie.secure', false),
         );
 
-        HTTP::setCookie(
+        $httpUtils = new HTTP();
+        $httpUtils->setCookie(
             $this->deviceCookieName,
             $cookieValue,
             $params
