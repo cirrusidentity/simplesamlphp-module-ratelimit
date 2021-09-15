@@ -22,7 +22,6 @@ use SimpleSAML\Store;
  */
 class RateLimitUserPass extends UserPassBase
 {
-
     /**
      * @var UserPassBase The auth source to handle the login
      */
@@ -58,7 +57,7 @@ class RateLimitUserPass extends UserPassBase
      * @param array $info Information about this authentication source.
      * @param array $config Configuration.
      */
-    public function __construct($info, $config)
+    public function __construct(array $info, array $config)
     {
         // Call the parent constructor first, as required by the interface
         parent::__construct($info, $config);
@@ -86,7 +85,11 @@ class RateLimitUserPass extends UserPassBase
         }
     }
 
-    private static function parseConfig($rateConfig): UserPassLimiter
+    /**
+     * @param array $rateConfig
+     * @return \SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter
+     */
+    private static function parseConfig(array $rateConfig): UserPassLimiter
     {
         $config = Configuration::loadFromArray($rateConfig);
         $rateType = $rateConfig[0];
@@ -114,7 +117,7 @@ class RateLimitUserPass extends UserPassBase
      * @return array  Associative array with the user's attributes.
      * @throws Error thrown on wrong password or other errors
      */
-    public function login($username, $password)
+    public function login(string $username, string $password): array
     {
         $timeStart = microtime(true);
         if (!$this->allowLoginAttempt($username, $password)) {
@@ -143,7 +146,7 @@ class RateLimitUserPass extends UserPassBase
      * @param float $timeDelegateStart The time we started delegating to another authsource
      * @param float $timeDelegateEnd The time the delegate finished or erred
      */
-    private function logOverhead(float $timeStart, float $timeDelegateStart, float $timeDelegateEnd)
+    private function logOverhead(float $timeStart, float $timeDelegateStart, float $timeDelegateEnd): void
     {
         $delegateTime = $timeDelegateEnd - $timeDelegateStart;
         $overHead = (microtime(true) - $timeStart) - $delegateTime;
