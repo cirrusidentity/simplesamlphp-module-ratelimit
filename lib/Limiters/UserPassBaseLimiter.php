@@ -78,9 +78,12 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      */
     public function postFailure(string $username, string $password): int
     {
+        $config = Configuration::getInstance();
+        $storeType = $config->getString('store.type', 'phpsession');
+
         $key = $this->getRateLimitKey($username, $password);
         $expiration = $this->determineWindowExpiration(time());
-        $store = StoreFactory::getInstance();
+        $store = StoreFactory::getInstance($storeType);
         $count = $this->getCurrentCount($key) + 1;
         $store->set('int', "ratelimit-$key", $count, $expiration);
         return $count;
@@ -103,7 +106,10 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      */
     protected function getCurrentCount(string $key): int
     {
-        $store = StoreFactory::getInstance();
+        $config = Configuration::getInstance();
+        $storeType = $config->getString('store.type', 'phpsession');
+
+        $store = StoreFactory::getInstance($storeType);
         $count = $store->get('int', "ratelimit-$key");
         return $count ?? 0;
     }

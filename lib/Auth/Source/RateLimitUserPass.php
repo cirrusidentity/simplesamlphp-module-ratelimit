@@ -14,7 +14,7 @@ use SimpleSAML\Module\ratelimit\Limiters\IpLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
-use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
 
 /**
  * Auth source that rate limits user and password attempts
@@ -78,7 +78,9 @@ class RateLimitUserPass extends UserPassBase
 
         $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
 
-        assert(Store::getInstance() !== false, "Store must be configured");
+        $sspConfig = Configuration::getInstance();
+        $storeType = $config->getString('store.type', 'phpsession');
+        assert(StoreFactory::getInstance($storeType) !== false, "Store must be configured");
         $rateLimitersConfig = $config->getArray('ratelimit', RateLimitUserPass::DEFAULT_CONFIG);
         foreach ($rateLimitersConfig as $rateConfig) {
             $this->rateLimiters[] = self::parseConfig($rateConfig);
