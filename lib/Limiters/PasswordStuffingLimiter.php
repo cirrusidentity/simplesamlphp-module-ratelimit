@@ -32,7 +32,9 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
 
     protected function generateSecureKeyFromPassword(string $password): string
     {
-        $cryptoUtils = new Utils\Crypto();
-        return base64_encode($cryptoUtils->pwHash($password));
+        $configUtils = new Utils\Config();
+        $salt = $configUtils->getSecretSalt();
+
+        return base64_encode(crypt($password, $salt));
     }
 }
