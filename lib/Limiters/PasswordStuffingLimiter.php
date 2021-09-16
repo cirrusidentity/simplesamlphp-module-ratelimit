@@ -31,7 +31,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
         return 'password-' . $this->generateSecureKeyFromPassword($password);
     }
 
-    protected function generateSecureKeyFromPassword(string $password)
+    protected function generateSecureKeyFromPassword(string $password): string
     {
         $cryptoUtils = new Utils\Crypto();
         return base64_encode($cryptoUtils->pwHash($password));
