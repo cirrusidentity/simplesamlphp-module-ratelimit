@@ -11,11 +11,10 @@ use Symfony\Component\HttpFoundation\IpUtils;
  */
 class IpLimiter extends UserPassBaseLimiter
 {
-
     /**
      * @var array The IP addresses that we ignore the rate limiter for
      */
-    private $whitelist;
+    private array $whitelist;
 
     public function __construct(Configuration $config)
     {

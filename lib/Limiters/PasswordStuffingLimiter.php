@@ -12,10 +12,10 @@ use SimpleSAML\Utils\Config;
  */
 class PasswordStuffingLimiter extends UserPassBaseLimiter
 {
-    /**
+   /**
      * @var int The cost to use with bcrypt
      */
-    private $cost;
+    private int $cost;
 
     public function __construct(Configuration $config)
     {
@@ -33,7 +33,9 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
 
     protected function generateSecureKeyFromPassword(string $password)
     {
-        $salt = '' . $this->determineWindowExpiration(time()) . Config::getSecretSalt();
+        $configUtils = new Config();
+
+        $salt = '' . $this->determineWindowExpiration(time()) . $configUtils->getSecretSalt();
         // Configure salt to use bcrypt
         $cryptSalt = sprintf('$2a$%02d$', $this->cost) . $salt;
         $hash = crypt($password, $cryptSalt);

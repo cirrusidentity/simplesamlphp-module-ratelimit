@@ -1,4 +1,5 @@
 <?php
+
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
 /**
@@ -7,7 +8,6 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
  */
 interface UserPassLimiter
 {
-
     /**
      * Called prior to verifying the credentials to determine if the attempt is allowed.
      * @param string $username The username to check

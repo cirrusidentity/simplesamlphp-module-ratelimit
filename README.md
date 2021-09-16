@@ -40,7 +40,7 @@ $config = [
      'sample' => [
         'ratelimit:RateLimitUserPass',
          delegate' => [
-            'ldap:LDAP',
+            'ldap:Ldap',
             //Other ldap:LDAP options
          ],
          'ratelimit' => [
