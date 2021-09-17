@@ -2,9 +2,8 @@
 
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
-use SAML2\Utils;
 use SimpleSAML\Configuration;
-use SimpleSAML\Utils\Config;
+use SimpleSAML\Utils\Crypto;
 
 /**
  * Prevent password stuffing attacks by blocking repeated attempts on an incorrect password.
@@ -31,16 +30,11 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
         return 'password-' . $this->generateSecureKeyFromPassword($password);
     }
 
-    protected function generateSecureKeyFromPassword(string $password)
+    protected function generateSecureKeyFromPassword(string $password): string
     {
-        $configUtils = new Config();
+        $configUtils = new Utils\Config();
+        $salt = $configUtils->getSecretSalt();
 
-        $salt = '' . $this->determineWindowExpiration(time()) . $configUtils->getSecretSalt();
-        // Configure salt to use bcrypt
-        $cryptSalt = sprintf('$2a$%02d$', $this->cost) . $salt;
-        $hash = crypt($password, $cryptSalt);
-        // Remove the salt, and only use part of the hash out of paranoia
-        $key = substr($hash, strlen($cryptSalt), 25);
-        return $key;
+        return base64_encode(crypt($password, $salt));
     }
 }
