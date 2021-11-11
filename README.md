@@ -78,6 +78,24 @@ are automatically enabled.
 
 When a login attempt is blocked the authsource throws a `WRONGUSERPASS` error.
 
+# Login Loop Detection
+When configured, will stop the browser from looping indefinately when interacting with a broken/mis configured SP. 
+
+## Configuration
+
+```
+    $config['authproc.idp'] = [
+...
+        51 => [
+            'class' => 'loginloopdetection:LoopDetection',
+            'secondssincelastsso' => 5,
+            'loopsbeforewarning' => 15,
+            'logonly' => FALSE,
+        ],
+...
+
+```
+
 # Development
 
 Run `phpcs` to check code style
