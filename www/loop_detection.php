@@ -13,7 +13,7 @@ if (!array_key_exists('StateId', $_REQUEST)) {
 $id = $_REQUEST['StateId'];
 
 /** @var array $state */
-$state = \SimpleSAML\Auth\State::loadState($id, 'loginloopdetection:loop_detection');
+$state = \SimpleSAML\Auth\State::loadState($id, 'ratelimit:loop_detection');
 
 $session = \SimpleSAML\Session::getSessionFromRequest();
 
@@ -23,12 +23,12 @@ if (array_key_exists('continue', $_REQUEST)) {
 }
 
 $globalConfig = \SimpleSAML\Configuration::getInstance();
-$t = new \SimpleSAML\XHTML\Template($globalConfig, 'loginloopdetection:loop_detection.tpl.php');
+$t = new \SimpleSAML\XHTML\Template($globalConfig, 'ratelimit:loop_detection.tpl.php');
 $translator = $t->getTranslator();
-$t->data['target'] = \SimpleSAML\Module::getModuleURL('loginloopdetection/loop_detection.php');
+$t->data['target'] = \SimpleSAML\Module::getModuleURL('ratelimit/loop_detection.php');
 $t->data['params'] = ['StateId' => $id];
 $t->data['trackId'] = $session->getTrackID();
-$t->data['header'] = $translator->t('{loginloopdetection:loop_detection:warning_header}');
+$t->data['header'] = $translator->t('{ratelimit:loop_detection:warning_header}');
 $t->data['autofocus'] = 'contbutton';
 $t->show();
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SimpleSAML\Module\loginloopdetection\Auth\Process;
+namespace SimpleSAML\Module\ratelimit\Auth\Process;
 
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
@@ -41,14 +41,12 @@ class LoopDetection extends Auth\ProcessingFilter
 
     public function __construct(&$config, $reserved)
     {
-        Logger::info('LoopDetectionConfig1: ' . var_dump($config));
         parent::__construct($config, $reserved);
         $config = Configuration::loadFromArray($config);
 
-        Logger::info('LoopDetectionConfig2: ' . var_dump($config));
-
         $this->secondssincelastsso = $config->getInteger('secondssincelastsso');
-        $this->attributes = $config->getInteger('loopsbeforewarning');
+        $this->loopsbeforewarning = $config->getInteger('loopsbeforewarning');
+        $this->logonly = $config->getBoolean('logonly', TRUE);
     }
 
 
@@ -101,13 +99,16 @@ class LoopDetection extends Auth\ProcessingFilter
             ' seconds since last SSO for this user from the SP ' . var_export($entityId, true));
 
         // Set the loop counter back to 0
-        $_SESSION['loopDetectionCount'] = 0;
+        // $_SESSION['loopDetectionCount'] = 0;
 
 
-        if ($logonly == FALSE) {
+        if (!$this->logonly) {
+            // Set the loop counter back to 0
+            $_SESSION['loopDetectionCount'] = 0;
+
             // Save state and redirect
-            $id = Auth\State::saveState($state, 'loginloopdetection:loop_detection');
-            $url = Module::getModuleURL('loginloopdetection/loop_detection.php');
+            $id = Auth\State::saveState($state, 'ratelimit:loop_detection');
+            $url = Module::getModuleURL('ratelimit/loop_detection.php');
             $httpUtils = new Utils\HTTP();
             $httpUtils->redirectTrustedURL($url, ['StateId' => $id]);
         }

@@ -10,12 +10,12 @@
  */
 
 
-$this->data['header'] = $this->t('{loginloopdetection:loop_detection:warning_header}');
+$this->data['header'] = $this->t('{ratelimit:loop_detection:warning_header}');
 $this->data['autofocus'] = 'contbutton';
 
 $this->includeAtTemplateBase('includes/header.php');
 $target = htmlspecialchars($this->data['target']);
-$contButton = htmlspecialchars($this->t('{loginloopdetection:loop_detection:retry}'));
+$contButton = htmlspecialchars($this->t('{ratelimit:loop_detection:retry}'));
 ?>
 <h1><?php echo $this->data['header']; ?></h1>
 
@@ -27,7 +27,7 @@ foreach ($this->data['params'] as $name => $value) {
     echo '<input type="hidden" name="'.htmlspecialchars($name).'" value="'.htmlspecialchars($value).'" />';
 }
 ?>
-    <p><?php echo $this->t('{loginloopdetection:loop_detection:warning}'); ?></p>
+    <p><?php echo $this->t('{ratelimit:loop_detection:warning}'); ?></p>
     <div class="trackidtext"><p>
         <?php echo $this->t('{errors:report_trackid}'); ?>
         <span class="trackid"><?php echo $this->data['trackId']; ?></span>
