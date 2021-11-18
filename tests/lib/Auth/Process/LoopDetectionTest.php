@@ -1,16 +1,18 @@
 <?php
 
+namespace SimpleSAML\Test\Module\ratelimit\Auth\Process;
+
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use CirrusIdentity\SSP\Test\MockHttp;
 use SimpleSAML\Module\ratelimit\Auth\Process\LoopDetection;
-
+use SimpleSAML\Session;
 
 class LoopDetectionTest extends \PHPUnit\Framework\TestCase
 {
 
-    private $mockHttp;
+    //private $mockHttp;
 
 
     public function setUp(): void
@@ -40,59 +42,34 @@ class LoopDetectionTest extends \PHPUnit\Framework\TestCase
     {
         $config = [
             'class' => 'ratelimit:LoopDetection',
-            'secondssincelastsso' => 1,
-            'loopsbeforewarning' => 5,
-            'logonly' => FALSE,
+            'secondsSinceLastSso' => 1,
+            'loopsBeforeWarning' => 5,
+            'logOnly' => false,
         ];
         return $config;
     }
-
-
-    public function testLoopDetectionSessionVar()
-    {
-        $_SESSION['loopDetectionCount'] = 10;
-        $this->assertEquals(10, $_SESSION['loopDetectionCount']);
-
-    }
-
-
-    public function testPreviousSSOGreaterThan()
-    {
-        $state = $this->getState();
-        $newTime = $state['PreviousSSOTimestamp'] + 10;
-        $this->assertGreaterThan($state['PreviousSSOTimestamp'],$newTime);
-    }
-
-
-    public function testPreviousSSOLessThan()
-    {
-        $state = $this->getState();
-        $newTime = $state['PreviousSSOTimestamp'] - 10;
-        $this->assertLessThan($state['PreviousSSOTimestamp'],$newTime);
-    }
-
 
     public function testLoopDetectionRedirect()
     {
         $state = $this->getState();
         $config = $this->getConfig();
+        $session = Session::getSessionFromRequest();
         $expectedUrl = 'http://localhost/module.php/ratelimit/loop_detection.php';
 
-        $x = [];
-        $source = new LoopDetection($config, NULL);
+        $emptyState = [];
+        $source = new LoopDetection($config, null);
 
-        $source->process($x);
+        $source->process($emptyState);
 
-        $_SESSION['loopDetectionCount'] = 11;
+        $session->setData('ratelimit:loopDetection', 'Count', 11);
         $_SERVER['REQUEST_URI'] = 'http://localhost';
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $state['PreviousSSOTimestamp'] = time();
         $stateId = null;
 
-
         try {
-            $resp = $source->process($state);
+            $source->process($state);
             $this->fail('Redirect exception expected');
         } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
@@ -103,39 +80,48 @@ class LoopDetectionTest extends \PHPUnit\Framework\TestCase
             );
             $this->assertArrayHasKey('StateId', $e->getParams(), "StateId is added");
             $stateId = $e->getParams()['StateId'];
-
         }
-
     }
 
     public function testLoopDetectionLogOnly()
     {
         $state = $this->getState();
         $config = $this->getConfig();
-        $config['logonly'] = TRUE;
+        $config['logOnly'] = true;
+        $session = Session::getSessionFromRequest();
 
         $expectedUrl = 'http://localhost/module.php/ratelimit/loop_detection.php';
 
-        $x = [];
-        $source = new LoopDetection($config, NULL);
+        $emptyState = [];
+        $source = new LoopDetection($config, null);
 
-        $source->process($x);
+        $source->process($emptyState);
 
-        $_SESSION['loopDetectionCount'] = 11;
+        $session->setData('ratelimit:loopDetection', 'Count', 11);
         $_SERVER['REQUEST_URI'] = 'http://localhost';
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $state['PreviousSSOTimestamp'] = time();
         $stateId = null;
 
-
         try {
             $source->process($state);
             $this->fail('Redirect exception is not expected');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertNotInstanceOf("CirrusIdentity\\SSP\\Test\\Capture\\RedirectException", $e);
-
         }
+    }
 
+    public function testLoopDetectionIncrementCount()
+    {
+        $state = $this->getState();
+        $state['PreviousSSOTimestamp'] = time();
+        $config = $this->getConfig();
+        $session = Session::getSessionFromRequest();
+        $session->setData('ratelimit:loopDetection', 'Count', 1);
+
+        $source = new LoopDetection($config, null);
+        $source->process($state);
+        $this->assertEquals(2, $session->getData('ratelimit:loopDetection', 'Count'));
     }
 }

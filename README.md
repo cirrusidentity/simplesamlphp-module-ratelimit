@@ -88,9 +88,9 @@ When configured, will stop the browser from looping indefinately when interactin
 ...
         51 => [
             'class' => 'loginloopdetection:LoopDetection',
-            'secondssincelastsso' => 5,
-            'loopsbeforewarning' => 15,
-            'logonly' => FALSE,
+            'secondsSinceLastSso' => 5,
+            'loopsBeforeWarning' => 15,
+            'logOnly' => false,
         ],
 ...
 
@@ -100,7 +100,7 @@ When configured, will stop the browser from looping indefinately when interactin
 
 Run `phpcs` to check code style
 
-    ./vendor/bin/phpcs --standard=PSR2 lib/ tests/
+    ./vendor/bin/phpcs --standard=PSR12 lib/ tests/
 
 Run `phpunit` to test
 
