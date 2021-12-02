@@ -1,4 +1,5 @@
 <?php
+
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
 use SimpleSAML\Configuration;

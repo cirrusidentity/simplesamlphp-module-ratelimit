@@ -1,10 +1,11 @@
 <?php
 
+namespace SimpleSAML\Module\ratelimit\Auth\Source;
+
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Error;
-use SimpleSAML\Module\ratelimit\Auth\Source\RateLimitUserPass;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
 
