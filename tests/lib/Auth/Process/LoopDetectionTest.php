@@ -12,9 +12,6 @@ use SimpleSAML\Session;
 class LoopDetectionTest extends \PHPUnit\Framework\TestCase
 {
 
-    //private $mockHttp;
-
-
     public function setUp(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
@@ -79,7 +76,6 @@ class LoopDetectionTest extends \PHPUnit\Framework\TestCase
                 "First argument should be the redirect url"
             );
             $this->assertArrayHasKey('StateId', $e->getParams(), "StateId is added");
-            $stateId = $e->getParams()['StateId'];
         }
     }
 
@@ -90,7 +86,6 @@ class LoopDetectionTest extends \PHPUnit\Framework\TestCase
         $config['logOnly'] = true;
         $session = Session::getSessionFromRequest();
 
-        $expectedUrl = 'http://localhost/module.php/ratelimit/loop_detection.php';
 
         $emptyState = [];
         $source = new LoopDetection($config, null);
@@ -104,12 +99,9 @@ class LoopDetectionTest extends \PHPUnit\Framework\TestCase
         $state['PreviousSSOTimestamp'] = time();
         $stateId = null;
 
-        try {
-            $source->process($state);
-            $this->fail('Redirect exception is not expected');
-        } catch (\Exception $e) {
-            $this->assertNotInstanceOf("CirrusIdentity\\SSP\\Test\\Capture\\RedirectException", $e);
-        }
+        $source->process($state);
+        // In Log Only mode the count should increment but user flow show not be impacted.
+        $this->assertEquals(12, $session->getData('ratelimit:loopDetection', 'Count'));
     }
 
     public function testLoopDetectionIncrementCount()

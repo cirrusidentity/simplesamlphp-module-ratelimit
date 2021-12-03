@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\ratelimit\Auth\Process;
 
+use Exception;
 use SimpleSAML\Auth\ProcessingFilter;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
@@ -57,12 +58,12 @@ class LoopDetection extends ProcessingFilter
      * This function checks how long it is since the last time the user was authenticated.
      * If it is to short a while since and repeats, we will show a warning to the user.
      *
-     * @param array $state  The state of the response.
+     * @param array $state The state of the response.
+     * @throws Exception
      */
     public function process(&$state): void
     {
 
-        assert(is_array($state));
         $session = Session::getSessionFromRequest();
 
         if (!array_key_exists('PreviousSSOTimestamp', $state)) {
@@ -71,7 +72,6 @@ class LoopDetection extends ProcessingFilter
              * time during this session.
              */
             $session->setData('ratelimit:loopDetection', 'Count', 0);
-
             return;
         }
 
@@ -83,7 +83,6 @@ class LoopDetection extends ProcessingFilter
         }
 
         $loopDetectionCount = $session->getData('ratelimit:loopDetection', 'Count') + 1;
-
         Logger::debug('LoopDetectionCount: ' . $loopDetectionCount);
 
         $session->setData('ratelimit:loopDetection', 'Count', $loopDetectionCount);

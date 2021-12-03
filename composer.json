@@ -13,6 +13,14 @@
     "require-dev": {
         "phpunit/phpunit": "^8.5",
         "cirrusidentity/simplesamlphp-test-utils": "dev-master",
-        "squizlabs/php_codesniffer": "^3.5"
+        "squizlabs/php_codesniffer": "^3.5",
+        "goaop/framework": "2.3.4",
+        "goaop/parser-reflection": "2.1.3"
+    },
+    "scripts": {
+        "pre-autoload-dump": [
+            "echo 'The tests/tmp directory should be removed to avoid aop cache issues'",
+            "rm -rf tests/tmp"
+        ]
     }
 }

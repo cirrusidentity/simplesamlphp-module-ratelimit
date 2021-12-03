@@ -3,4 +3,5 @@ vendor/
 .idea/
 .DS_Store
 .phpunit.result.cache
-modules/
+/modules/
+/tests/tmp
