@@ -144,7 +144,7 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals('continue', $limiter->allow('u', 'p'));
     }
 
-    private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie'): void
+    private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie')
     {
         $invocations = $this->mockHttp->getCallsForMethod('setCookie');
         $this->assertCount(1, $invocations, 'Unexpected # of setCookie invocations');
