@@ -90,7 +90,7 @@ abstract class BaseLimitTest extends TestCase
      */
     abstract public function testKeyVariesWithInput(): void;
 
-    private function getStoreValueFor(string $key): void
+    private function getStoreValueFor(string $key)
     {
         return Store::getInstance()->get('int', 'ratelimit-' . $key);
     }
