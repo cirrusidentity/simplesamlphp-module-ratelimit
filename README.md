@@ -32,14 +32,23 @@ All included limiters support these 2 settings:
 * limit: (int)The number of failed attempts before limiter takes affect
 * window: (string) An ISO8601 duration string for the time window to track limit. Example: PT5M would be 5 minutes. P14D would be 14 days.
 
+Configuration should be done in `authsources.php`. The `RateLimitUserPass` authsource wraps other auth sources to enforce the rate limits. Each of your existing `authsource` definitions should get moved inside the `'delegate'` key.
+
 ### Sample Configuration
 
 ```php
 $config = [
 
-     'sample' => [
+//  Sample authsource prior to using rate limiting
+//    'sample' => [
+//        'ldap:Ldap',
+//         //Other ldap:LDAP options
+//     ],
+
+// Sample authsource after moving to rate limiting
+     'sample' => [  // Authsource name stays the same
         'ratelimit:RateLimitUserPass',
-         delegate' => [
+         'delegate' => [  // Previous authsource configuration for 'sample' moves here
             'ldap:Ldap',
             //Other ldap:LDAP options
          ],
