@@ -45,7 +45,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
         // Generate the bcrypt hash
         $hash = crypt($password, $cryptSalt);
 
-        // Remove the salt, and base64-encode the hash
-        return substr($hash, strlen($cryptSalt) - 1);
+        // Remove the salt, the first two characters of the password hash and then base64-encode the hash
+        return base64_encode(substr($hash, strlen($cryptSalt) + 1));
     }
 }
