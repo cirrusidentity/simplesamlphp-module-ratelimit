@@ -2,6 +2,7 @@
 
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
+use CirrusIdentity\SSP\Test\InMemoryStore;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
@@ -32,7 +33,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $this->assertEquals($result, $limiter->getRateLimitKey('xyz', $password));
         $this->assertEquals($result, $limiter->getRateLimitKey('abc', $password));
 
-        sleep(2);
+        sleep(3);
         // Next window should have different keys
         $newKey = $limiter->getRateLimitKey('efg', $password);
         $this->assertNotEquals($result, $newKey, 'Key should vary with window');
@@ -58,26 +59,62 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $this->assertEquals($key1, $key2, 'keys should remain the same');
     }
 
-    public function testSaltWithSpecialCharactersDoesNtCauseIssue(): void
+    private function setConfigBasedOnSalt(String $salt): void
     {
         Configuration::setPreLoadedConfig(
             Configuration::loadFromArray([
-                'secretsalt' => '! /*%√'
+                'secretsalt' => $salt,
+                'module.enable' => [
+                    'ratelimit' => true,
+                ],
+                'store.type' => InMemoryStore::class,
             ])
         );
+    }
+
+    /**
+     * @dataProvider saltProvider
+     */
+    public function testVariousSalts(string $salt): void
+    {
+        $this->setConfigBasedOnSalt($salt);
+        $limiter = $this->getLimiter([]);
+        $key1 = $limiter->getRateLimitKey('u', 'p1');
+        $this->assertGreaterThan(strlen('password-'), strlen($key1));
+    }
+
+    public function saltProvider(): array
+    {
+        return [
+            // 12 seems like minimum salt lenght
+            ['123456789012'],
+            // longer than 22
+          ['123456789012345678901234568']
+        ];
+    }
+
+    /**
+     * @dataProvider badSaltProvider
+     */
+    public function testBadSaltsDoesntResultInBlankKey(string $salt): void
+    {
+        $this->setConfigBasedOnSalt($salt);
         $limiter = $this->getLimiter([
             'window' => 'PT2S'
         ]);
         $password = 'p!% *';
 
-        $key1 = $limiter->getRateLimitKey('u1', $password);
-        $key2 = $limiter->getRateLimitKey('u2', $password);
-        $this->assertEquals($key1, $key2, 'keys should remain the same');
+        $this->expectErrorMessage('Unable to generate password hash key');
+        $limiter->getRateLimitKey('u1', $password);
+    }
 
-        sleep(2);
-        // Next window should have different keys
-        $newKey = $limiter->getRateLimitKey('efg', $password);
-        $this->assertNotEquals($key1, $newKey, 'Key should vary with window');
-        $this->assertEquals($newKey, $limiter->getRateLimitKey('xyz', $password));
+    public function badSaltProvider(): array
+    {
+        return [
+            // too short
+            ['a'],
+            // special characters
+            ['! /*%√'],
+        ];
     }
 }

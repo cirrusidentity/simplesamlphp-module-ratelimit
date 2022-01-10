@@ -18,7 +18,9 @@ abstract class BaseLimitTest extends TestCase
 
     protected function tearDown(): void
     {
+        StoreFactory::clearInternalState();
         InMemoryStore::clearInternalState();
+        Configuration::clearInternalState();
     }
 
     abstract protected function getLimiter(array $config): UserPassBaseLimiter;

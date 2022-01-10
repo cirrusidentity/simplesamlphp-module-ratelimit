@@ -16,14 +16,19 @@ class RateLimitUserPassTest extends TestCase
 
     protected function setUp(): void
     {
+
         // Stub the setCookie method
         $this->mockHttp = test::double('SimpleSAML\Utils\HTTP', [
             'setCookie' => true,
         ]);
+        // Seems like generating the mock above may sometimes cause a default Configuration to be crated.
+        Configuration::clearInternalState();
     }
 
     protected function tearDown(): void
     {
+        Configuration::clearInternalState();
+        StoreFactory::clearInternalState();
         InMemoryStore::clearInternalState();
         unset($_COOKIE['deviceCookie']);
     }
@@ -40,10 +45,10 @@ class RateLimitUserPassTest extends TestCase
         $info = [
           'AuthId' => 'admin'
         ];
-        $source = new RateLimitUserPass($info, $authsourceConfig);
         $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
+        $source = new RateLimitUserPass($info, $authsourceConfig);
 
         //when: attempting authentication with the correct password
         $this->assertTrue(

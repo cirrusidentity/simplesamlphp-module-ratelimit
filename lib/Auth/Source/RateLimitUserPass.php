@@ -28,11 +28,6 @@ class RateLimitUserPass extends UserPassBase
     private UserPassBase $delegate;
 
     /**
-     * @var string The cookie name to use for device cookies
-     */
-    private string $deviceCookieName;
-
-    /**
      * @var UserPassLimiter[]
      */
     private array $rateLimiters;
@@ -75,8 +70,6 @@ class RateLimitUserPass extends UserPassBase
         $method->setAccessible(true);
         $this->delegate = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegateConfig]);
         assert($this->delegate instanceof UserPassBase);
-
-        $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
 
         $storeType = Configuration::getInstance()->getString('store.type', 'phpsession');
         assert(StoreFactory::getInstance($storeType) !== false, "Store must be configured");

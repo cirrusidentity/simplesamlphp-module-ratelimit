@@ -480,16 +480,16 @@
         },
         {
             "name": "simplesamlphp/assert",
-            "version": "v0.2.10",
+            "version": "v0.2.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/assert.git",
-                "reference": "c31bb57504b5bdd8937bb604167a0ee95b4dcaa6"
+                "reference": "f3a240905f3ce39c95835bf1e6aa2896743aacf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/assert/zipball/c31bb57504b5bdd8937bb604167a0ee95b4dcaa6",
-                "reference": "c31bb57504b5bdd8937bb604167a0ee95b4dcaa6",
+                "url": "https://api.github.com/repos/simplesamlphp/assert/zipball/f3a240905f3ce39c95835bf1e6aa2896743aacf7",
+                "reference": "f3a240905f3ce39c95835bf1e6aa2896743aacf7",
                 "shasum": ""
             },
             "require": {
@@ -526,11 +526,7 @@
                 }
             ],
             "description": "A wrapper around webmozart/assert to make it useful beyond checking method arguments",
-            "support": {
-                "issues": "https://github.com/simplesamlphp/assert/issues",
-                "source": "https://github.com/simplesamlphp/assert/tree/v0.2.10"
-            },
-            "time": "2022-01-02T16:15:38+00:00"
+            "time": "2022-01-05T21:49:22+00:00"
         },
         {
             "name": "simplesamlphp/composer-module-installer",
@@ -572,16 +568,16 @@
         },
         {
             "name": "simplesamlphp/saml2",
-            "version": "v4.2.5",
+            "version": "v4.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/saml2.git",
-                "reference": "4ae96cb02a9ac9da3825d69af0500e594509bcaf"
+                "reference": "8ce8819085e7bfc622e0dc4eedcadee677ae8d6f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/saml2/zipball/4ae96cb02a9ac9da3825d69af0500e594509bcaf",
-                "reference": "4ae96cb02a9ac9da3825d69af0500e594509bcaf",
+                "url": "https://api.github.com/repos/simplesamlphp/saml2/zipball/8ce8819085e7bfc622e0dc4eedcadee677ae8d6f",
+                "reference": "8ce8819085e7bfc622e0dc4eedcadee677ae8d6f",
                 "shasum": ""
             },
             "require": {
@@ -622,24 +618,20 @@
                 }
             ],
             "description": "SAML2 PHP library from SimpleSAMLphp",
-            "support": {
-                "issues": "https://github.com/simplesamlphp/saml2/issues",
-                "source": "https://github.com/simplesamlphp/saml2/tree/v4.2.5"
-            },
-            "time": "2021-12-09T21:25:23+00:00"
+            "time": "2022-01-06T11:37:45+00:00"
         },
         {
             "name": "simplesamlphp/simplesamlphp",
-            "version": "v2.0.0-beta.2",
+            "version": "v2.0.0-beta.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/simplesamlphp.git",
-                "reference": "1211c05fa40e43b83723d839d761ac2e19a1761f"
+                "reference": "d453bc48a005ac4f7c9de2a3d09f586cf305d86d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp/zipball/1211c05fa40e43b83723d839d761ac2e19a1761f",
-                "reference": "1211c05fa40e43b83723d839d761ac2e19a1761f",
+                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp/zipball/d453bc48a005ac4f7c9de2a3d09f586cf305d86d",
+                "reference": "d453bc48a005ac4f7c9de2a3d09f586cf305d86d",
                 "shasum": ""
             },
             "require": {
@@ -656,7 +648,7 @@
                 "php": ">=7.4 || ^8.0",
                 "phpmailer/phpmailer": "^6.1",
                 "simplesamlphp/assert": "^0.2.7",
-                "simplesamlphp/saml2": "^4.2.3",
+                "simplesamlphp/saml2": "^4.2.6",
                 "symfony/cache": "^5.0",
                 "symfony/config": "^5.0",
                 "symfony/console": "^5.0",
@@ -729,11 +721,7 @@
                 "sp",
                 "ws-federation"
             ],
-            "support": {
-                "issues": "https://github.com/simplesamlphp/simplesamlphp/issues",
-                "source": "https://github.com/simplesamlphp/simplesamlphp"
-            },
-            "time": "2021-12-10T12:49:40+00:00"
+            "time": "2022-01-06T17:43:01+00:00"
         },
         {
             "name": "symfony/cache",
@@ -6873,16 +6861,16 @@
         },
         {
             "name": "vimeo/psalm",
-            "version": "4.17.0",
+            "version": "4.18.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "6f4707aa41c9174353a6434bba3fc8840f981d9c"
+                "reference": "dda05fa913f4dc6eb3386f2f7ce5a45d37a71bcb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/6f4707aa41c9174353a6434bba3fc8840f981d9c",
-                "reference": "6f4707aa41c9174353a6434bba3fc8840f981d9c",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/dda05fa913f4dc6eb3386f2f7ce5a45d37a71bcb",
+                "reference": "dda05fa913f4dc6eb3386f2f7ce5a45d37a71bcb",
                 "shasum": ""
             },
             "require": {
@@ -6971,11 +6959,7 @@
                 "inspection",
                 "php"
             ],
-            "support": {
-                "issues": "https://github.com/vimeo/psalm/issues",
-                "source": "https://github.com/vimeo/psalm/tree/4.17.0"
-            },
-            "time": "2022-01-01T18:39:47+00:00"
+            "time": "2022-01-08T21:21:26+00:00"
         },
         {
             "name": "webmozart/path-util",
@@ -7041,5 +7025,5 @@
         "php": ">=7.4 || ^8.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "1.1.0"
 }

@@ -103,11 +103,7 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      */
     protected function getCurrentCount(string $key): int
     {
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
-        $store = StoreFactory::getInstance($storeType);
-        $count = $store->get('int', "ratelimit-$key");
+        $count = $this->getStore()->get('int', "ratelimit-$key");
         return $count ?? 0;
     }
 
