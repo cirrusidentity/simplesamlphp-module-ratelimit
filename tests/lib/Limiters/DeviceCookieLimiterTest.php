@@ -12,7 +12,6 @@ use SimpleSAML\Store\StoreFactory;
 
 class DeviceCookieLimiterTest extends TestCase
 {
-
     private $mockHttp;
 
     protected function setUp(): void

@@ -10,7 +10,6 @@ use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 
 class PasswordStuffingLimiterTest extends BaseLimitTest
 {
-
     protected function getLimiter(array $config): UserPassBaseLimiter
     {
         return new PasswordStuffingLimiter(Configuration::loadFromArray($config));
@@ -59,7 +58,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $this->assertEquals($key1, $key2, 'keys should remain the same');
     }
 
-    private function setConfigBasedOnSalt(String $salt): void
+    private function setConfigBasedOnSalt(string $salt): void
     {
         Configuration::setPreLoadedConfig(
             Configuration::loadFromArray([
