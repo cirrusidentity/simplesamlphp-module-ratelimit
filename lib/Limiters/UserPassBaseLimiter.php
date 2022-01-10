@@ -5,6 +5,7 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
 use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\Store\StoreInterface;
 use SimpleSAML\Utils\Time;
 
 abstract class UserPassBaseLimiter implements UserPassLimiter
@@ -78,20 +79,16 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      */
     public function postFailure(string $username, string $password): int
     {
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
         $key = $this->getRateLimitKey($username, $password);
         $expiration = $this->determineWindowExpiration(time());
-        $store = StoreFactory::getInstance($storeType);
         $count = $this->getCurrentCount($key) + 1;
-        $store->set('int', "ratelimit-$key", $count, $expiration);
+        $this->getStore()->set('int', "ratelimit-$key", $count, $expiration);
         return $count;
     }
 
     /**
      * Relaxed visibility for testing
-     * @param int $time The curent time to use for calculating
+     * @param int $time The current time to use for calculating
      * @return int The expiration date for this limit window
      */
     public function determineWindowExpiration(int $time): int
@@ -112,6 +109,15 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
         $store = StoreFactory::getInstance($storeType);
         $count = $store->get('int', "ratelimit-$key");
         return $count ?? 0;
+    }
+
+    public function getStore(): StoreInterface
+    {
+        $config = Configuration::getInstance();
+        $storeType = $config->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        assert($store !== false, "Store must be configured");
+        return $store;
     }
 
     abstract public function getRateLimitKey(string $username, string $password): string;

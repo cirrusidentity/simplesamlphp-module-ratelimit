@@ -32,12 +32,8 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         if (!$this->hasDeviceCookieSet()) {
             return UserPassBaseLimiter::PREAUTH_CONTINUE;
         }
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
         $key = $this->getRateLimitKey($username, $password);
-        $store = StoreFactory::getInstance($storeType);
-        $ret = $store->get('array', "ratelimit-$key");
+        $ret = $this->getStore()->get('array', "ratelimit-$key");
         if ($ret === null) {
             return UserPassBaseLimiter::PREAUTH_CONTINUE;
         }
@@ -50,11 +46,8 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
             return 0;
         }
 
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
         $key = $this->getRateLimitKey($username, $password);
-        $store = StoreFactory::getInstance($storeType);
+        $store = $this->getStore();
         $ret = $store->get('array', "ratelimit-$key");
         if ($ret === null || $ret['user'] !== $username) {
             return 0;
@@ -78,10 +71,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
      */
     public function postSuccess(string $username, string $password): void
     {
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
-        $store = StoreFactory::getInstance($storeType);
+        $store = $this->getStore();
         // Clear old cookie from store
         if ($this->hasDeviceCookieSet()) {
             $key = $this->getRateLimitKey($username, $password);

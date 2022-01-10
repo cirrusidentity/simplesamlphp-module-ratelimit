@@ -38,7 +38,7 @@ class DeviceCookieLimiterTest extends TestCase
         $deviceCookie = $this->getDeviceCookieFromMock();
         $_COOKIE['deviceCookie'] = $deviceCookie;
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
-        $store = StoreFactory::getInstance();
+        $store = $limiter->getStore();
 //        $store->dump();
         $val = $store->get('array', $key);
         $this->assertNotNull($val, $key . ' expected');
@@ -53,7 +53,7 @@ class DeviceCookieLimiterTest extends TestCase
         $limiter = $this->getLimiter([]);
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
         $oldVal = ['notimportant'];
-        $store = StoreFactory::getInstance();
+        $store = $limiter->getStore();
         $store->set('array', $key, $oldVal);
 
         //when: authenticating
@@ -107,10 +107,10 @@ class DeviceCookieLimiterTest extends TestCase
 
     public function testFailedAttemptsRemoveCookie(): void
     {
-        $store = StoreFactory::getInstance();
         $limiter = $this->getLimiter([
             'limit' => 2,
         ]);
+        $store = $limiter->getStore();
 
         //Expect: no cookie is not tracked
         $this->assertEquals(0, $limiter->postFailure('u', 'p'));

@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
 
 abstract class BaseLimitTest extends TestCase
 {
@@ -67,8 +68,8 @@ abstract class BaseLimitTest extends TestCase
         $this->assertEquals('block', $limiter->allow($username, $password));
 
         // Sleep until the next window, and counter should be reset
-        usleep(3020000);
-        $this->assertNull($this->getStoreValueFor($limiter->getRateLimitKey($username, $password)));
+        usleep(3920000);
+        $this->assertNull($this->getStoreValueFor($limiter->getRateLimitKey($username, $password)), 'Value not expected in store');
         $this->assertEquals('continue', $limiter->allow($username, $password));
     }
 
@@ -92,6 +93,9 @@ abstract class BaseLimitTest extends TestCase
 
     private function getStoreValueFor(string $key)
     {
-        return Store::getInstance()->get('int', 'ratelimit-' . $key);
+        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
+        return $store->get('int', 'ratelimit-' . $key);
     }
 }

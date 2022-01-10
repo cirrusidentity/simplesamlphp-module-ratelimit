@@ -5,6 +5,7 @@ namespace SimpleSAML\Module\ratelimit\Auth\Source;
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
@@ -40,7 +41,9 @@ class RateLimitUserPassTest extends TestCase
           'AuthId' => 'admin'
         ];
         $source = new RateLimitUserPass($info, $authsourceConfig);
-        $store = StoreFactory::getInstance();
+        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
 
         //when: attempting authentication with the correct password
         $this->assertTrue(
@@ -95,7 +98,9 @@ class RateLimitUserPassTest extends TestCase
             'AuthId' => 'admin'
         ];
         $source = new RateLimitUserPass($info, $authsourceConfig);
-        $store = Store::getInstance();
+        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
 
         $this->assertTrue(
             $this->checkPassword($source, 'admin', 'secret')

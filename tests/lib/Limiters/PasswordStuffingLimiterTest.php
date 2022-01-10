@@ -32,7 +32,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $this->assertEquals($result, $limiter->getRateLimitKey('xyz', $password));
         $this->assertEquals($result, $limiter->getRateLimitKey('abc', $password));
 
-        sleep(3);
+        sleep(2);
         // Next window should have different keys
         $newKey = $limiter->getRateLimitKey('efg', $password);
         $this->assertNotEquals($result, $newKey, 'Key should vary with window');
@@ -48,5 +48,36 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $key1 = $limiter->getRateLimitKey('u', 'p1');
         $key2 = $limiter->getRateLimitKey('u', 'p2');
         $this->assertNotEquals($key1, $key2, 'keys should vary');
+    }
+
+    public function testKeyIsConstantInTimeWindow(): void
+    {
+        $limiter = $this->getLimiter([]);
+        $key1 = $limiter->getRateLimitKey('u1', 'p1');
+        $key2 = $limiter->getRateLimitKey('u2', 'p1');
+        $this->assertEquals($key1, $key2, 'keys should remain the same');
+    }
+
+    public function testSaltWithSpecialCharactersDoesNtCauseIssue(): void
+    {
+        Configuration::setPreLoadedConfig(
+            Configuration::loadFromArray([
+                'secretsalt' => '! /*%√'
+            ])
+        );
+        $limiter = $this->getLimiter([
+            'window' => 'PT2S'
+        ]);
+        $password = 'p!% *';
+
+        $key1 = $limiter->getRateLimitKey('u1', $password);
+        $key2 = $limiter->getRateLimitKey('u2', $password);
+        $this->assertEquals($key1, $key2, 'keys should remain the same');
+
+        sleep(2);
+        // Next window should have different keys
+        $newKey = $limiter->getRateLimitKey('efg', $password);
+        $this->assertNotEquals($key1, $newKey, 'Key should vary with window');
+        $this->assertEquals($newKey, $limiter->getRateLimitKey('xyz', $password));
     }
 }
