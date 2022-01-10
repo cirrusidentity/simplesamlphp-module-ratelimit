@@ -4,6 +4,11 @@
     <include>
       <directory suffix=".php">./lib</directory>
     </include>
+    <report>
+      <clover outputFile="build/logs/clover.xml"/>
+      <html outputDirectory="build/coverage" lowUpperBound="35" highLowerBound="70"/>
+      <text outputFile="php://stdout" showUncoveredFiles="true"/>
+    </report>
   </coverage>
   <testsuites>
     <testsuite name="The project's test suite">

@@ -70,7 +70,7 @@ abstract class BaseLimitTest extends TestCase
         $this->assertEquals('block', $limiter->allow($username, $password));
 
         // Sleep until the next window, and counter should be reset
-        usleep(3920000);
+        usleep(4020000);
         $this->assertNull($this->getStoreValueFor($limiter->getRateLimitKey($username, $password)), 'Value not expected in store');
         $this->assertEquals('continue', $limiter->allow($username, $password));
     }
