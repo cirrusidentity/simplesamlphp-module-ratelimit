@@ -9,16 +9,20 @@ use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
 use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\Utils\HTTP;
 
 class DeviceCookieLimiterTest extends TestCase
 {
+    /**
+     * @var HTTP::class\AspectMock\Proxy\ClassProxy|\AspectMock\Proxy\InstanceProxy|\AspectMock\Proxy\Verifier|null
+     */
     private $mockHttp;
 
     protected function setUp(): void
     {
         test::clean();
         // Stub the setCookie method
-        $this->mockHttp = test::double('SimpleSAML\Utils\HTTP', [
+        $this->mockHttp = test::double(HTTP::class, [
             'setCookie' => true,
         ]);
     }
@@ -143,7 +147,7 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals('continue', $limiter->allow('u', 'p'));
     }
 
-    private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie')
+    private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie'): string
     {
         $invocations = $this->mockHttp->getCallsForMethod('setCookie');
         $this->assertCount(1, $invocations, 'Unexpected # of setCookie invocations');
