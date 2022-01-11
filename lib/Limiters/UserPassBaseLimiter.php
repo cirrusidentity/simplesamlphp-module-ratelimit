@@ -27,11 +27,11 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
     /**
      * UserPassBaseLimiter constructor.
      */
-    public function __construct(Configuration $config)
+    public function __construct(Configuration $config, ?string $defaultWindow = 'PT5M')
     {
         $timeUtils = new Time();
-
-        $windowDuration = $config->getString('window', 'PT5M');
+        /** @var string $windowDuration */
+        $windowDuration = $config->getString('window', $defaultWindow);
         $this->window = $timeUtils->parseDuration($windowDuration, 0);
 
         // If window is negative than misconfiguration
@@ -39,10 +39,9 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
             $this->window,
             'Invalid duration \'' . $this->window . '\'. Defaulting to 5m'
         );
-
+        /** @var int limit */
         $this->limit = $config->getInteger('limit', 15);
     }
-
 
     /**
      * Called prior to verifying the credentials to determine if the attempt is allowed.
