@@ -14,7 +14,7 @@ use SimpleSAML\Utils\HTTP;
 class DeviceCookieLimiterTest extends TestCase
 {
     /**
-     * @var HTTP::class\AspectMock\Proxy\ClassProxy|\AspectMock\Proxy\InstanceProxy|\AspectMock\Proxy\Verifier|null
+     * @var \AspectMock\Proxy\ClassProxy|\AspectMock\Proxy\InstanceProxy|\AspectMock\Proxy\Verifier
      */
     private $mockHttp;
 
@@ -42,7 +42,7 @@ class DeviceCookieLimiterTest extends TestCase
         $_COOKIE['deviceCookie'] = $deviceCookie;
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
         $store = $limiter->getStore();
-//        $store->dump();
+        /** @var array{count: int, user: string}|null $val */
         $val = $store->get('array', $key);
         $this->assertNotNull($val, $key . ' expected');
         $this->assertEquals('user', $val['user']);
@@ -70,6 +70,7 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertNotEquals('oldCookie', $deviceCookie);
         $_COOKIE['deviceCookie'] = $deviceCookie;
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
+        /** @var array{count: int, user: string}|null $val */
         $val = $store->get('array', $key);
         $this->assertNotNull($val);
         $this->assertEquals('user', $val['user']);
@@ -137,7 +138,9 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals('allow', $limiter->allow('u', 'p'));
 
         $key = $limiter->getRateLimitKey('u', 'p');
+        /** @var array{count: int, user: string}|null $result */
         $result = $store->get('array', 'ratelimit-' . $key);
+        $this->assertNotNull($result);
         $this->assertEquals(1, $result['count']);
         $this->assertEquals('u', $result['user']);
         // Expect: hitting limit to unset cookie
@@ -149,9 +152,10 @@ class DeviceCookieLimiterTest extends TestCase
 
     private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie'): string
     {
+        /** @var array<int, array{0: string, 1: string}> $invocations */
         $invocations = $this->mockHttp->getCallsForMethod('setCookie');
         $this->assertCount(1, $invocations, 'Unexpected # of setCookie invocations');
-        $args = $this->mockHttp->getCallsForMethod('setCookie')[0];
+        $args = $invocations[0];
         $this->assertEquals($cookieName, $args[0]);
         return $args[1];
     }

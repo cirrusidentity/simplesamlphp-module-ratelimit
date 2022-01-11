@@ -22,6 +22,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
         parent::__construct($config);
 
         // We aren't storing the whole hash or for very long, so favor speed
+        /** @var int cost */
         $this->cost = $config->getInteger('hashCost', 8);
 
         Assert::range($this->cost, 4, 31, 'The cost must be an integer between 4 and 31.');
@@ -36,9 +37,6 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
     protected function generateSecureKeyFromPassword(string $password): string
     {
         $configUtils = new Config();
-
-        //TODO: need to make sure this only contains legal salt characters
-        //TODO: check behavior for small salts. e.g. is it okay for salt to be less than 22 characters
         $salt = $this->determineWindowExpiration(time()) . $configUtils->getSecretSalt();
 
         // Configure salt to use bcrypt. bcrypt supports salt up to 22 characters
@@ -49,7 +47,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
 
         /**
          * On crypt failure it returns 'a string that is shorter than 13 characters and is guaranteed to differ from
-         * the salt on failure.'
+         * the salt on failure.'. Failure reasons can include a salt with special characters or a small salt.
          */
         if (strlen($hash) < 13) {
             throw new \RuntimeException('Unable to generate password hash key');

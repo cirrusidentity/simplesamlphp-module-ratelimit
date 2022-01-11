@@ -92,7 +92,7 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      */
     public function determineWindowExpiration(int $time): int
     {
-        return ceil(($time + 1) / $this->window) * $this->window;
+        return intval(ceil(($time + 1) / $this->window)) * $this->window;
     }
 
     /**
@@ -102,6 +102,7 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      */
     protected function getCurrentCount(string $key): int
     {
+        /** @var int|null $count */
         $count = $this->getStore()->get('int', "ratelimit-$key");
         return $count ?? 0;
     }
@@ -109,6 +110,7 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
     public function getStore(): StoreInterface
     {
         $config = Configuration::getInstance();
+        /** @var string $storeType */
         $storeType = $config->getString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         assert($store !== false, "Store must be configured");

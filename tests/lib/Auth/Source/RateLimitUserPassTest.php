@@ -9,16 +9,20 @@ use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
+use SimpleSAML\Utils\HTTP;
 
 class RateLimitUserPassTest extends TestCase
 {
+    /**
+     * @var HTTP|\AspectMock\Proxy\ClassProxy|\AspectMock\Proxy\InstanceProxy|\AspectMock\Proxy\Verifier|null
+     */
     private $mockHttp;
 
     protected function setUp(): void
     {
 
         // Stub the setCookie method
-        $this->mockHttp = test::double('SimpleSAML\Utils\HTTP', [
+        $this->mockHttp = test::double(HTTP::class, [
             'setCookie' => true,
         ]);
         // Seems like generating the mock above may sometimes cause a default Configuration to be crated.
@@ -45,6 +49,7 @@ class RateLimitUserPassTest extends TestCase
         $info = [
           'AuthId' => 'admin'
         ];
+        /** @var string $storeType */
         $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
@@ -103,6 +108,7 @@ class RateLimitUserPassTest extends TestCase
             'AuthId' => 'admin'
         ];
         $source = new RateLimitUserPass($info, $authsourceConfig);
+        /** @var string $storeType */
         $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
