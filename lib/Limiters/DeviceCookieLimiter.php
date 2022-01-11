@@ -4,22 +4,21 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
-use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Utils\HTTP;
 
 class DeviceCookieLimiter extends UserPassBaseLimiter
 {
-
     /**
      * @var string The cookie name to use for device cookies
      */
-    private $deviceCookieName;
+    private string $deviceCookieName;
 
     public function __construct(Configuration $config)
     {
-        parent::__construct($config);
         // Device Cookie has a long window to store the cookie value
-        $this->windowDuration = $config->getString('window', 'P28D');
+        parent::__construct($config, 'P28D');
+        /** @var string deviceCookieName */
         $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
     }
 
@@ -34,8 +33,8 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
             return UserPassBaseLimiter::PREAUTH_CONTINUE;
         }
         $key = $this->getRateLimitKey($username, $password);
-        $store = Store::getInstance();
-        $ret = $store->get('array', "ratelimit-$key");
+        /** @var array|null $ret */
+        $ret = $this->getStore()->get('array', "ratelimit-$key");
         if ($ret === null) {
             return UserPassBaseLimiter::PREAUTH_CONTINUE;
         }
@@ -47,8 +46,10 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         if (!$this->hasDeviceCookieSet()) {
             return 0;
         }
+
         $key = $this->getRateLimitKey($username, $password);
-        $store = Store::getInstance();
+        $store = $this->getStore();
+        /** @var array{count: int, user: string}|null $ret */
         $ret = $store->get('array', "ratelimit-$key");
         if ($ret === null || $ret['user'] !== $username) {
             return 0;
@@ -64,6 +65,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         }
         return $ret['count'];
     }
+
     /**
      * Called after a successful authentication
      * @param string $username The username to check
@@ -71,7 +73,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
      */
     public function postSuccess(string $username, string $password): void
     {
-        $store = Store::getInstance();
+        $store = $this->getStore();
         // Clear old cookie from store
         if ($this->hasDeviceCookieSet()) {
             $key = $this->getRateLimitKey($username, $password);
@@ -87,7 +89,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         $this->setDeviceCookie($cookieId);
     }
 
-    private function setDeviceCookie(?string $cookieValue)
+    private function setDeviceCookie(?string $cookieValue): void
     {
         $params = array(
             'lifetime' => $this->window,
@@ -95,7 +97,8 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
             'secure'   => Configuration::getConfig()->getBoolean('session.cookie.secure', false),
         );
 
-        HTTP::setCookie(
+        $httpUtils = new HTTP();
+        $httpUtils->setCookie(
             $this->deviceCookieName,
             $cookieValue,
             $params
@@ -104,10 +107,11 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
 
     private function checkForDeviceCookie(): string
     {
+        /** @var string */
         return $_COOKIE[$this->deviceCookieName];
     }
 
-    private function hasDeviceCookieSet(): string
+    private function hasDeviceCookieSet(): bool
     {
         return array_key_exists($this->deviceCookieName, $_COOKIE);
     }

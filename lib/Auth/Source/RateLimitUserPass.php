@@ -3,6 +3,7 @@
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
 use ReflectionClass;
+use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\Error;
@@ -14,7 +15,7 @@ use SimpleSAML\Module\ratelimit\Limiters\IpLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
-use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
 
 /**
  * Auth source that rate limits user and password attempts
@@ -22,23 +23,17 @@ use SimpleSAML\Store;
  */
 class RateLimitUserPass extends UserPassBase
 {
-
     /**
      * @var UserPassBase The auth source to handle the login
      */
-    private $delegate;
-
-    /**
-     * @var string The cookie name to use for device cookies
-     */
-    private $deviceCookieName;
+    private UserPassBase $delegate;
 
     /**
      * @var UserPassLimiter[]
      */
-    private $rateLimiters;
+    private array $rateLimiters;
 
-    const DEFAULT_CONFIG = [
+    private const DEFAULT_CONFIG = [
         0 => [
             'device',
             'window' => 'P28D',
@@ -56,39 +51,46 @@ class RateLimitUserPass extends UserPassBase
      * Constructor for this authentication source.
      *
      * @param array $info Information about this authentication source.
-     * @param array $config Configuration.
+     * @param array $configArray Configuration.
      */
-    public function __construct($info, $config)
+    public function __construct(array $info, array $configArray)
     {
         // Call the parent constructor first, as required by the interface
-        parent::__construct($info, $config);
+        parent::__construct($info, $configArray);
         $config = Configuration::loadFromArray(
-            $config,
+            $configArray,
             'Authentication source ' . var_export($this->authId, true)
         );
         // delegate to another named authsourc has security issues since delgated authsource can be invoked by attacker
         //$this->delegate = Source::getById($config->getString('delegate'), UserPassBase::class);
 
         // instead make parseAuthSource accessible and call it
+        /** @var array $delegateConfig */
         $delegateConfig = $config->getArray('delegate');
         $class = new ReflectionClass(Source::class);
         $method = $class->getMethod('parseAuthSource');
         $method->setAccessible(true);
+        /** @var UserPassBase delegate */
         $this->delegate = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegateConfig]);
-        assert($this->delegate instanceof UserPassBase);
 
-        $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
-
-        assert(Store::getInstance() !== false, "Store must be configured");
+        /** @var string $storeType */
+        $storeType = Configuration::getInstance()->getString('store.type', 'phpsession');
+        assert(StoreFactory::getInstance($storeType) !== false, "Store must be configured");
+        /** @var array[] $rateLimitersConfig */
         $rateLimitersConfig = $config->getArray('ratelimit', RateLimitUserPass::DEFAULT_CONFIG);
         foreach ($rateLimitersConfig as $rateConfig) {
             $this->rateLimiters[] = self::parseConfig($rateConfig);
         }
     }
 
-    private static function parseConfig($rateConfig): UserPassLimiter
+    /**
+     * @param array $rateConfig
+     * @return UserPassLimiter
+     */
+    private static function parseConfig(array $rateConfig): UserPassLimiter
     {
         $config = Configuration::loadFromArray($rateConfig);
+        /** @var string $rateType */
         $rateType = $rateConfig[0];
         switch ($rateType) {
             case 'device':
@@ -102,7 +104,9 @@ class RateLimitUserPass extends UserPassBase
             default:
                 // limiter from module
                 $className = Module::resolveClass($rateType, 'UserPassLimiter');
-                return new $className($config);
+                /** @var UserPassLimiter $obj */
+                $obj = new $className($config);
+                return $obj;
         }
     }
 
@@ -114,7 +118,7 @@ class RateLimitUserPass extends UserPassBase
      * @return array  Associative array with the user's attributes.
      * @throws Error thrown on wrong password or other errors
      */
-    public function login($username, $password)
+    public function login(string $username, string $password): array
     {
         $timeStart = microtime(true);
         if (!$this->allowLoginAttempt($username, $password)) {
@@ -143,7 +147,7 @@ class RateLimitUserPass extends UserPassBase
      * @param float $timeDelegateStart The time we started delegating to another authsource
      * @param float $timeDelegateEnd The time the delegate finished or erred
      */
-    private function logOverhead(float $timeStart, float $timeDelegateStart, float $timeDelegateEnd)
+    private function logOverhead(float $timeStart, float $timeDelegateStart, float $timeDelegateEnd): void
     {
         $delegateTime = $timeDelegateEnd - $timeDelegateStart;
         $overHead = (microtime(true) - $timeStart) - $delegateTime;

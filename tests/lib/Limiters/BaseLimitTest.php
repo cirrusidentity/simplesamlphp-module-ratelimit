@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
 
 abstract class BaseLimitTest extends TestCase
 {
@@ -17,7 +18,9 @@ abstract class BaseLimitTest extends TestCase
 
     protected function tearDown(): void
     {
+        StoreFactory::clearInternalState();
         InMemoryStore::clearInternalState();
+        Configuration::clearInternalState();
     }
 
     abstract protected function getLimiter(array $config): UserPassBaseLimiter;
@@ -25,7 +28,7 @@ abstract class BaseLimitTest extends TestCase
     /**
      *  Test window calculation
      */
-    public function testWindowExpiration()
+    public function testWindowExpiration(): void
     {
         $config = [];
         $limiter = $this->getLimiter($config);
@@ -48,7 +51,7 @@ abstract class BaseLimitTest extends TestCase
     /**
      * Test allow interactions
      */
-    public function testAllowAndFailure()
+    public function testAllowAndFailure(): void
     {
         $config = [
             'limit' => 3,
@@ -67,15 +70,15 @@ abstract class BaseLimitTest extends TestCase
         $this->assertEquals('block', $limiter->allow($username, $password));
 
         // Sleep until the next window, and counter should be reset
-        usleep(3020000);
-        $this->assertNull($this->getStoreValueFor($limiter->getRateLimitKey($username, $password)));
+        usleep(4020000);
+        $this->assertNull($this->getStoreValueFor($limiter->getRateLimitKey($username, $password)), 'Value not expected in store');
         $this->assertEquals('continue', $limiter->allow($username, $password));
     }
 
     /**
      * By default this is a noop
      */
-    public function testDefaultSuccess()
+    public function testDefaultSuccess(): void
     {
         $limiter = $this->getLimiter([]);
         $username = 'Homer';
@@ -92,6 +95,9 @@ abstract class BaseLimitTest extends TestCase
 
     private function getStoreValueFor(string $key)
     {
-        return Store::getInstance()->get('int', 'ratelimit-' . $key);
+        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
+        return $store->get('int', 'ratelimit-' . $key);
     }
 }

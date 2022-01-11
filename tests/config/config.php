@@ -13,7 +13,8 @@ $config = [
     ],
 
     'module.enable' => [
-        'exampleauth' => true
+        'exampleauth' => true,
+        'ratelimit' => true,
     ],
 
     'store.type' => '\CirrusIdentity\SSP\Test\InMemoryStore',
@@ -23,5 +24,6 @@ $config = [
     'logging.handler' => 'errorlog',
 
     'secretsalt' =>  'donttellanyone',
+    //'secretsalt' =>  '!',
     'auth.adminpassword' => 'secret'
 ];

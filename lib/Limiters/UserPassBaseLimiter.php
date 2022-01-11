@@ -2,41 +2,46 @@
 
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
+use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
-use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\Store\StoreInterface;
 use SimpleSAML\Utils\Time;
 
 abstract class UserPassBaseLimiter implements UserPassLimiter
 {
-    const PREAUTH_ALLOW = 'allow';
-    const PREAUTH_BLOCK = 'block';
-    const PREAUTH_CONTINUE = 'continue';
+    protected const PREAUTH_ALLOW = 'allow';
+    protected const PREAUTH_BLOCK = 'block';
+    protected const PREAUTH_CONTINUE = 'continue';
 
     /**
      * @var int $limit The limit of attempts
      */
-    protected $limit;
+    protected int $limit;
 
     /**
      * @var int $window The time window in seconds to count attempts
      */
-    protected $window;
+    protected int $window;
 
     /**
      * UserPassBaseLimiter constructor.
      */
-    public function __construct(Configuration $config)
+    public function __construct(Configuration $config, ?string $defaultWindow = 'PT5M')
     {
-        $windowDuration = $config->getString('window', 'PT5M');
-        $this->window = Time::parseDuration($windowDuration, 0);
+        $timeUtils = new Time();
+        /** @var string $windowDuration */
+        $windowDuration = $config->getString('window', $defaultWindow);
+        $this->window = $timeUtils->parseDuration($windowDuration, 0);
+
         // If window is negative than misconfiguration
-        assert(
-            $this->window > 0,
+        Assert::positiveInteger(
+            $this->window,
             'Invalid duration \'' . $this->window . '\'. Defaulting to 5m'
         );
+        /** @var int limit */
         $this->limit = $config->getInteger('limit', 15);
     }
-
 
     /**
      * Called prior to verifying the credentials to determine if the attempt is allowed.
@@ -75,15 +80,14 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
     {
         $key = $this->getRateLimitKey($username, $password);
         $expiration = $this->determineWindowExpiration(time());
-        $store = Store::getInstance();
         $count = $this->getCurrentCount($key) + 1;
-        $store->set('int', "ratelimit-$key", $count, $expiration);
+        $this->getStore()->set('int', "ratelimit-$key", $count, $expiration);
         return $count;
     }
 
     /**
      * Relaxed visibility for testing
-     * @param int $time The curent time to use for calculating
+     * @param int $time The current time to use for calculating
      * @return int The expiration date for this limit window
      */
     public function determineWindowExpiration(int $time): int
@@ -98,9 +102,17 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      */
     protected function getCurrentCount(string $key): int
     {
-        $store = Store::getInstance();
-        $count = $store->get('int', "ratelimit-$key");
+        $count = $this->getStore()->get('int', "ratelimit-$key");
         return $count ?? 0;
+    }
+
+    public function getStore(): StoreInterface
+    {
+        $config = Configuration::getInstance();
+        $storeType = $config->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        assert($store !== false, "Store must be configured");
+        return $store;
     }
 
     abstract public function getRateLimitKey(string $username, string $password): string;

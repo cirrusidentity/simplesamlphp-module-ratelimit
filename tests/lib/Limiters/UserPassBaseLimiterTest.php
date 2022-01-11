@@ -7,7 +7,6 @@ use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 
 class UserPassBaseLimiterTest extends BaseLimitTest
 {
-
     protected function getLimiter(array $config): UserPassBaseLimiter
     {
         return new SampleLimiter(Configuration::loadFromArray($config));
@@ -27,7 +26,6 @@ class UserPassBaseLimiterTest extends BaseLimitTest
 
 class SampleLimiter extends UserPassBaseLimiter
 {
-
     public function getRateLimitKey(string $username, string $password): string
     {
         return 'sample-' . $username[0];

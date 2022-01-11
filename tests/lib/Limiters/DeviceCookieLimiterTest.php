@@ -8,18 +8,21 @@ use CirrusIdentity\SSP\Test\MockHttp;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
-use SimpleSAML\Store;
+use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\Utils\HTTP;
 
 class DeviceCookieLimiterTest extends TestCase
 {
-
+    /**
+     * @var HTTP::class\AspectMock\Proxy\ClassProxy|\AspectMock\Proxy\InstanceProxy|\AspectMock\Proxy\Verifier|null
+     */
     private $mockHttp;
 
     protected function setUp(): void
     {
         test::clean();
         // Stub the setCookie method
-        $this->mockHttp = test::double('SimpleSAML\Utils\HTTP', [
+        $this->mockHttp = test::double(HTTP::class, [
             'setCookie' => true,
         ]);
     }
@@ -31,14 +34,14 @@ class DeviceCookieLimiterTest extends TestCase
     }
 
 
-    public function testSuccessWithNoPreexistingCookie()
+    public function testSuccessWithNoPreexistingCookie(): void
     {
         $limiter = $this->getLimiter([]);
         $limiter->postSuccess('user', 'password');
         $deviceCookie = $this->getDeviceCookieFromMock();
         $_COOKIE['deviceCookie'] = $deviceCookie;
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
-        $store = Store::getInstance();
+        $store = $limiter->getStore();
 //        $store->dump();
         $val = $store->get('array', $key);
         $this->assertNotNull($val, $key . ' expected');
@@ -46,14 +49,14 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals(0, $val['count']);
     }
 
-    public function testSuccessWithPreexistingCookie()
+    public function testSuccessWithPreexistingCookie(): void
     {
         //given: an old device cookie
         $_COOKIE['deviceCookie'] = 'oldCookie';
         $limiter = $this->getLimiter([]);
         $key = 'ratelimit-' . $limiter->getRateLimitKey('user', 'pass');
         $oldVal = ['notimportant'];
-        $store = Store::getInstance();
+        $store = $limiter->getStore();
         $store->set('array', $key, $oldVal);
 
         //when: authenticating
@@ -73,7 +76,7 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals(0, $val['count']);
     }
 
-    public function testDeviceCookieAllowsAuth()
+    public function testDeviceCookieAllowsAuth(): void
     {
         $limiter = $this->getLimiter([]);
 
@@ -105,12 +108,12 @@ class DeviceCookieLimiterTest extends TestCase
         );
     }
 
-    public function testFailedAttemptsRemoveCookie()
+    public function testFailedAttemptsRemoveCookie(): void
     {
-        $store = Store::getInstance();
         $limiter = $this->getLimiter([
             'limit' => 2,
         ]);
+        $store = $limiter->getStore();
 
         //Expect: no cookie is not tracked
         $this->assertEquals(0, $limiter->postFailure('u', 'p'));
@@ -144,7 +147,7 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals('continue', $limiter->allow('u', 'p'));
     }
 
-    private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie')
+    private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie'): string
     {
         $invocations = $this->mockHttp->getCallsForMethod('setCookie');
         $this->assertCount(1, $invocations, 'Unexpected # of setCookie invocations');
