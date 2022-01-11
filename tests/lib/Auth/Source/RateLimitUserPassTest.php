@@ -9,6 +9,7 @@ use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
+use SimpleSAML\TestUtils\StateClearer;
 
 class RateLimitUserPassTest extends TestCase
 {
@@ -16,6 +17,8 @@ class RateLimitUserPassTest extends TestCase
 
     protected function setUp(): void
     {
+
+        (new StateClearer())->clearSSPState();
 
         // Stub the setCookie method
         $this->mockHttp = test::double('SimpleSAML\Utils\HTTP', [

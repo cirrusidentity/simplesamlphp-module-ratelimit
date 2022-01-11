@@ -6,15 +6,18 @@ use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use CirrusIdentity\SSP\Test\MockHttp;
+use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\ratelimit\Auth\Process\LoopDetection;
 use SimpleSAML\Session;
+use SimpleSAML\TestUtils\ClearStateTestCase;
+use SimpleSAML\TestUtils\StateClearer;
 
-class LoopDetectionTest extends \PHPUnit\Framework\TestCase
+class LoopDetectionTest extends TestCase
 {
 
     public function setUp(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
+        (new StateClearer())->clearSSPState();
         MockHttp::throwOnRedirectTrustedURL();
     }
 
