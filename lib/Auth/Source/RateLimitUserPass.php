@@ -3,6 +3,7 @@
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
 use ReflectionClass;
+use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\Error;
@@ -28,11 +29,6 @@ class RateLimitUserPass extends UserPassBase
     private UserPassBase $delegate;
 
     /**
-     * @var string The cookie name to use for device cookies
-     */
-    private string $deviceCookieName;
-
-    /**
      * @var UserPassLimiter[]
      */
     private array $rateLimiters;
@@ -55,32 +51,32 @@ class RateLimitUserPass extends UserPassBase
      * Constructor for this authentication source.
      *
      * @param array $info Information about this authentication source.
-     * @param array $config Configuration.
+     * @param array $configArray Configuration.
      */
-    public function __construct(array $info, array $config)
+    public function __construct(array $info, array $configArray)
     {
         // Call the parent constructor first, as required by the interface
-        parent::__construct($info, $config);
+        parent::__construct($info, $configArray);
         $config = Configuration::loadFromArray(
-            $config,
+            $configArray,
             'Authentication source ' . var_export($this->authId, true)
         );
         // delegate to another named authsourc has security issues since delgated authsource can be invoked by attacker
         //$this->delegate = Source::getById($config->getString('delegate'), UserPassBase::class);
 
         // instead make parseAuthSource accessible and call it
+        /** @var array $delegateConfig */
         $delegateConfig = $config->getArray('delegate');
         $class = new ReflectionClass(Source::class);
         $method = $class->getMethod('parseAuthSource');
         $method->setAccessible(true);
+        /** @var UserPassBase delegate */
         $this->delegate = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegateConfig]);
-        assert($this->delegate instanceof UserPassBase);
 
-        $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
-
-        $sspConfig = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
+        /** @var string $storeType */
+        $storeType = Configuration::getInstance()->getString('store.type', 'phpsession');
         assert(StoreFactory::getInstance($storeType) !== false, "Store must be configured");
+        /** @var array[] $rateLimitersConfig */
         $rateLimitersConfig = $config->getArray('ratelimit', RateLimitUserPass::DEFAULT_CONFIG);
         foreach ($rateLimitersConfig as $rateConfig) {
             $this->rateLimiters[] = self::parseConfig($rateConfig);
@@ -89,11 +85,12 @@ class RateLimitUserPass extends UserPassBase
 
     /**
      * @param array $rateConfig
-     * @return \SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter
+     * @return UserPassLimiter
      */
     private static function parseConfig(array $rateConfig): UserPassLimiter
     {
         $config = Configuration::loadFromArray($rateConfig);
+        /** @var string $rateType */
         $rateType = $rateConfig[0];
         switch ($rateType) {
             case 'device':
@@ -107,7 +104,9 @@ class RateLimitUserPass extends UserPassBase
             default:
                 // limiter from module
                 $className = Module::resolveClass($rateType, 'UserPassLimiter');
-                return new $className($config);
+                /** @var UserPassLimiter $obj */
+                $obj = new $className($config);
+                return $obj;
         }
     }
 

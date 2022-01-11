@@ -8,7 +8,6 @@ use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 
 class UsernameLimiterTest extends BaseLimitTest
 {
-
     /**
      * Confirm that the key changes with different passwords
      */

@@ -7,7 +7,6 @@ use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
 
 class ExceptionThrowingLimiter implements UserPassLimiter
 {
-
     /**
      * Called prior to verifying the credentials to determine if the attempt is allowed.
      * @param string $username The username to check

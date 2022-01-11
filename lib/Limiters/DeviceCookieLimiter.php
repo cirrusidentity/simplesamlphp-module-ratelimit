@@ -16,9 +16,9 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
 
     public function __construct(Configuration $config)
     {
-        parent::__construct($config);
         // Device Cookie has a long window to store the cookie value
-        $this->windowDuration = $config->getString('window', 'P28D');
+        parent::__construct($config, 'P28D');
+        /** @var string deviceCookieName */
         $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
     }
 
@@ -32,12 +32,9 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         if (!$this->hasDeviceCookieSet()) {
             return UserPassBaseLimiter::PREAUTH_CONTINUE;
         }
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
         $key = $this->getRateLimitKey($username, $password);
-        $store = StoreFactory::getInstance($storeType);
-        $ret = $store->get('array', "ratelimit-$key");
+        /** @var array|null $ret */
+        $ret = $this->getStore()->get('array', "ratelimit-$key");
         if ($ret === null) {
             return UserPassBaseLimiter::PREAUTH_CONTINUE;
         }
@@ -50,11 +47,9 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
             return 0;
         }
 
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
         $key = $this->getRateLimitKey($username, $password);
-        $store = StoreFactory::getInstance($storeType);
+        $store = $this->getStore();
+        /** @var array{count: int, user: string}|null $ret */
         $ret = $store->get('array', "ratelimit-$key");
         if ($ret === null || $ret['user'] !== $username) {
             return 0;
@@ -78,10 +73,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
      */
     public function postSuccess(string $username, string $password): void
     {
-        $config = Configuration::getInstance();
-        $storeType = $config->getString('store.type', 'phpsession');
-
-        $store = StoreFactory::getInstance($storeType);
+        $store = $this->getStore();
         // Clear old cookie from store
         if ($this->hasDeviceCookieSet()) {
             $key = $this->getRateLimitKey($username, $password);
@@ -115,10 +107,11 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
 
     private function checkForDeviceCookie(): string
     {
+        /** @var string */
         return $_COOKIE[$this->deviceCookieName];
     }
 
-    private function hasDeviceCookieSet(): string
+    private function hasDeviceCookieSet(): bool
     {
         return array_key_exists($this->deviceCookieName, $_COOKIE);
     }

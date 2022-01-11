@@ -5,6 +5,7 @@ namespace SimpleSAML\Module\ratelimit\Auth\Source;
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
@@ -15,14 +16,19 @@ class RateLimitUserPassTest extends TestCase
 
     protected function setUp(): void
     {
+
         // Stub the setCookie method
         $this->mockHttp = test::double('SimpleSAML\Utils\HTTP', [
             'setCookie' => true,
         ]);
+        // Seems like generating the mock above may sometimes cause a default Configuration to be crated.
+        Configuration::clearInternalState();
     }
 
     protected function tearDown(): void
     {
+        Configuration::clearInternalState();
+        StoreFactory::clearInternalState();
         InMemoryStore::clearInternalState();
         unset($_COOKIE['deviceCookie']);
     }
@@ -39,8 +45,10 @@ class RateLimitUserPassTest extends TestCase
         $info = [
           'AuthId' => 'admin'
         ];
+        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
         $source = new RateLimitUserPass($info, $authsourceConfig);
-        $store = StoreFactory::getInstance();
 
         //when: attempting authentication with the correct password
         $this->assertTrue(
@@ -95,7 +103,9 @@ class RateLimitUserPassTest extends TestCase
             'AuthId' => 'admin'
         ];
         $source = new RateLimitUserPass($info, $authsourceConfig);
-        $store = Store::getInstance();
+        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $store = StoreFactory::getInstance($storeType);
+        $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
 
         $this->assertTrue(
             $this->checkPassword($source, 'admin', 'secret')

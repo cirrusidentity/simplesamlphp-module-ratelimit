@@ -13,14 +13,23 @@ require_once($projectRootDirectory . '/vendor/autoload.php');
 // workaround for issues related to configuration files being hidden by aspect mock
 $workaround = new \SimpleSAML\Error\ConfigurationError();
 
+$aopCacheDir = __DIR__ . '/tmp/aop-cache/';
+if (!file_exists($aopCacheDir)) {
+    mkdir($aopCacheDir, 0777, true);
+} else {
+    echo $aopCacheDir . ' already exists. If you do any composer updates/changes then remove this directory';
+}
+
 // AspectMock
 $kernel = \AspectMock\Kernel::getInstance();
-$kernel->init([
-    'debug' => true,
-    // Any class that we want to stub/mock needs to be in included paths
-    'includePaths' => [
-        $projectRootDirectory . '/vendor/simplesamlphp/simplesamlphp/',
-    ]
+$kernel->init(
+ [
+        'debug' => true,
+        'cacheDir' => $aopCacheDir, // Cache directory
+        // Any class that we want to stub/mock needs to be in included paths
+        'includePaths' => [
+            $projectRootDirectory . '/vendor/simplesamlphp/simplesamlphp/lib/SimpleSAML/Utils/HTTP.php',
+        ]
 ]);
 
 /**
