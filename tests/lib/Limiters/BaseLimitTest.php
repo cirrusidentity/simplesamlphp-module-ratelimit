@@ -71,7 +71,10 @@ abstract class BaseLimitTest extends TestCase
 
         // Sleep until the next window, and counter should be reset
         usleep(4020000);
-        $this->assertNull($this->getStoreValueFor($limiter->getRateLimitKey($username, $password)), 'Value not expected in store');
+        $this->assertNull(
+            $this->getStoreValueFor($limiter->getRateLimitKey($username, $password)),
+            'Value not expected in store'
+        );
         $this->assertEquals('continue', $limiter->allow($username, $password));
     }
 
@@ -93,11 +96,19 @@ abstract class BaseLimitTest extends TestCase
      */
     abstract public function testKeyVariesWithInput(): void;
 
+    /**
+     * Get the stored count value or null if not stored.
+     * @param string $key
+     * @return int|null
+     * @throws \SimpleSAML\Error\CriticalConfigurationError
+     */
     private function getStoreValueFor(string $key)
     {
+        /** @var string $storeType */
         $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
+        /** @var int|null */
         return $store->get('int', 'ratelimit-' . $key);
     }
 }

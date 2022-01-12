@@ -23,7 +23,7 @@ class UserPassBaseLimiterTest extends BaseLimitTest
         $this->assertNotEquals($key1, $key2, 'keys should vary');
     }
 }
-
+// phpcs:ignore
 class SampleLimiter extends UserPassBaseLimiter
 {
     public function getRateLimitKey(string $username, string $password): string

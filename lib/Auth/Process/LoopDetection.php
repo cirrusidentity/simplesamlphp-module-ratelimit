@@ -53,10 +53,10 @@ class LoopDetection extends ProcessingFilter
 
 
     /**
-     * Process a authentication response.
+     * Process an authentication response.
      *
      * This function checks how long it is since the last time the user was authenticated.
-     * If it is to short a while since and repeats, we will show a warning to the user.
+     * If it is too short a while since and repeats, we will show a warning to the user.
      *
      * @param array $state The state of the response.
      * @throws Exception

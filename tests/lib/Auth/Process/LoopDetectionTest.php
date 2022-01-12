@@ -7,6 +7,9 @@ use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use CirrusIdentity\SSP\Test\MockHttp;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use SimpleSAML\Auth\Source;
+use SimpleSAML\Module\core\Auth\UserPassBase;
 use SimpleSAML\Module\ratelimit\Auth\Process\LoopDetection;
 use SimpleSAML\Session;
 use SimpleSAML\TestUtils\ClearStateTestCase;
@@ -49,11 +52,23 @@ class LoopDetectionTest extends TestCase
         return $config;
     }
 
+    private function getSession(): Session
+    {
+        $session = Session::getSessionFromRequest();
+        //cli/phpunit sessions don't have session ids, but SessionHandlerStore needs a session id to save dirty state
+        $class = new ReflectionClass(Session::class);
+        $prop = $class->getProperty('sessionId');
+        $prop->setAccessible(true);
+        $prop->setValue($session, 'mockedSessionId');
+        $this->assertEquals('mockedSessionId', $session->getSessionId());
+        return $session;
+    }
+
     public function testLoopDetectionRedirect()
     {
         $state = $this->getState();
         $config = $this->getConfig();
-        $session = Session::getSessionFromRequest();
+        $session = $this->getSession();
         $expectedUrl = 'http://localhost/module.php/ratelimit/loop_detection.php';
 
         $emptyState = [];
@@ -87,8 +102,7 @@ class LoopDetectionTest extends TestCase
         $state = $this->getState();
         $config = $this->getConfig();
         $config['logOnly'] = true;
-        $session = Session::getSessionFromRequest();
-
+        $session = $this->getSession();
 
         $emptyState = [];
         $source = new LoopDetection($config, null);
@@ -112,7 +126,7 @@ class LoopDetectionTest extends TestCase
         $state = $this->getState();
         $state['PreviousSSOTimestamp'] = time();
         $config = $this->getConfig();
-        $session = Session::getSessionFromRequest();
+        $session = $this->getSession();
         $session->setData('ratelimit:loopDetection', 'Count', 1);
 
         $source = new LoopDetection($config, null);

@@ -11,7 +11,7 @@ $simplesamlphpConfig = $projectRootDirectory . '/vendor/simplesamlphp/simplesaml
 require_once($projectRootDirectory . '/vendor/autoload.php');
 
 // workaround for issues related to configuration files being hidden by aspect mock
-$workaround = new \SimpleSAML\Error\ConfigurationError();
+new \SimpleSAML\Error\ConfigurationError();
 
 $aopCacheDir = __DIR__ . '/tmp/aop-cache/';
 if (!file_exists($aopCacheDir)) {
