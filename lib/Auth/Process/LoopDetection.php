@@ -20,34 +20,39 @@ use SimpleSAML\Utils;
  */
 class LoopDetection extends ProcessingFilter
 {
+    /**
+     * Increase count if less than this number of seconds since Previous SSO
+     * @var int
+     */
+    private int $secondsSinceLastSso;
+
 
     /**
-     * Number of seconds since Previous SSO.
-     * @var integer
+     * The number of loops before warning/redirecting
+     * @var int
      */
-    private $secondsSinceLastSso;
+    private int $loopsBeforeWarning;
+
+    /**
+     * Only log a warning instead of redirecting user.
+     * @var bool
+     */
+    private bool $logOnly;
 
 
     /**
-     * The number of loops before warning.
-     * @var integer
+     * @inheritdoc
      */
-    private $loopsBeforeWarning;
-
-    /**
-     * Only log a warning.
-     * @var boolean
-     */
-    private $logOnly;
-
-
-    public function __construct(&$config, $reserved)
+    public function __construct(array &$configArray, $reserved)
     {
-        parent::__construct($config, $reserved);
-        $config = Configuration::loadFromArray($config);
+        parent::__construct($configArray, $reserved);
+        $config = Configuration::loadFromArray($configArray);
 
+        /** @var int secondsSinceLastSso */
         $this->secondsSinceLastSso = $config->getInteger('secondsSinceLastSso');
+        /** @var int loopsBeforeWarning */
         $this->loopsBeforeWarning = $config->getInteger('loopsBeforeWarning');
+        /** @var bool logOnly */
         $this->logOnly = $config->getBoolean('logOnly', true);
     }
 
@@ -61,9 +66,8 @@ class LoopDetection extends ProcessingFilter
      * @param array $state The state of the response.
      * @throws Exception
      */
-    public function process(&$state): void
+    public function process(array &$state): void
     {
-
         $session = Session::getSessionFromRequest();
 
         if (!array_key_exists('PreviousSSOTimestamp', $state)) {
@@ -81,8 +85,9 @@ class LoopDetection extends ProcessingFilter
             $session->setData('ratelimit:loopDetection', 'Count', 0);
             return;
         }
-
-        $loopDetectionCount = $session->getData('ratelimit:loopDetection', 'Count') + 1;
+        /** @var int $loopDetectionCount */
+        $loopDetectionCount = $session->getData('ratelimit:loopDetection', 'Count');
+        $loopDetectionCount++;
         Logger::debug('LoopDetectionCount: ' . $loopDetectionCount);
 
         $session->setData('ratelimit:loopDetection', 'Count', $loopDetectionCount);
@@ -106,7 +111,7 @@ class LoopDetection extends ProcessingFilter
             $session->setData('ratelimit:loopDetection', 'Count', 0);
             // Save state and redirect
             $id = State::saveState($state, 'ratelimit:loop_detection');
-            $url = Module::getModuleURL('ratelimit/loop_detection.php');
+            $url = Module::getModuleURL('ratelimit/loop_detection');
             $httpUtils = new Utils\HTTP();
             $httpUtils->redirectTrustedURL($url, ['StateId' => $id]);
         }

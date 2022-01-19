@@ -77,7 +77,7 @@ $config = [
                        '5.6.7.0/24',
                     ],
                ],
-          ]
+          ] //
 ```
 
 If no `ratelimit` block is defined then the `UsernameLimiter` and `DeviceCookieLimiter`
@@ -104,12 +104,37 @@ When configured, will stop the browser from looping indefinately when interactin
 ...
 
 ```
+# Exploring with Docker
 
+You can explore these features with Docker.
+
+```bash
+
+docker network create --driver bridge ratelimit-net
+# Ratelimit requires you to define a "store" to store rate limit data. These tests use memcached
+docker run --network ratelimit-net -p 11211:11211 --name memcache-ratelimit -d memcached
+
+docker run -d --name ssp-ratelimit \
+   --network ratelimit-net \
+   --mount type=bind,source="$(pwd)",target=/var/simplesamlphp/staging-modules/ratelimit,readonly \
+  -e STAGINGCOMPOSERREPOS=ratelimit \
+  -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-ratelimit:@dev" \
+  --mount type=bind,source="$(pwd)/tests/docker/metadata/",target=/var/simplesamlphp/metadata/,readonly \
+  --mount type=bind,source="$(pwd)/tests/docker/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
+  --mount type=bind,source="$(pwd)/tests/docker/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
+  --mount type=bind,source="$(pwd)/tests/docker/cert/",target=/var/simplesamlphp/cert/,readonly \
+   -p 443:443 cirrusid/simplesamlphp:2.0.0-beta.1
+```
+
+Then log in as `admin:secret` to https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/core/frontpage_welcome.php
+to confirm things work.
+
+You can
 # Development
 
 Run `phpcs` to check code style
 
-    ./vendor/bin/phpcs --standard=PSR12 lib/ tests/
+    ./vendor/bin/phpcs lib/ tests/
 
 Run `phpunit` to test
 
@@ -118,3 +143,7 @@ Run `phpunit` to test
 You can auto correct some findings from phpcs. It is recommended you do this after stage your changes (or maybe even commit) since there is a non-trivial chance it will just mess up your code.
 
     ./vendor/bin/phpcbf --ignore=somefile.php --standard=PSR2 lib/ tests/
+
+Run `psalm` to test four quality
+
+    ./vendor/bin/psalm

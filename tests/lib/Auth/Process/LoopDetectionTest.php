@@ -17,7 +17,6 @@ use SimpleSAML\TestUtils\StateClearer;
 
 class LoopDetectionTest extends TestCase
 {
-
     public function setUp(): void
     {
         (new StateClearer())->clearSSPState();
@@ -77,11 +76,7 @@ class LoopDetectionTest extends TestCase
         $source->process($emptyState);
 
         $session->setData('ratelimit:loopDetection', 'Count', 11);
-        $_SERVER['REQUEST_URI'] = 'http://localhost';
-        $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
-        $_SERVER['REQUEST_METHOD'] = 'POST';
         $state['PreviousSSOTimestamp'] = time();
-        $stateId = null;
 
         try {
             $source->process($state);
@@ -110,11 +105,7 @@ class LoopDetectionTest extends TestCase
         $source->process($emptyState);
 
         $session->setData('ratelimit:loopDetection', 'Count', 11);
-        $_SERVER['REQUEST_URI'] = 'http://localhost';
-        $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
-        $_SERVER['REQUEST_METHOD'] = 'POST';
         $state['PreviousSSOTimestamp'] = time();
-        $stateId = null;
 
         $source->process($state);
         // In Log Only mode the count should increment but user flow show not be impacted.

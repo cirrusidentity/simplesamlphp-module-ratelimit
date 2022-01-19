@@ -1,0 +1,30 @@
+{% set pagetitle = 'Login Loop Detected'|trans %}
+
+{% extends "base.twig" %}
+
+{% block content %}
+
+
+
+
+<h1><?php echo $this->data['header']; ?></h1>
+
+    <form id="loop_acknowledge" action="{{ moduleURL('ratelimit/loop_detection') }}">
+
+        {# Add state #}
+{#<?php#}
+{#// Embed hidden fields...#}
+{#foreach ($this->data['params'] as $name => $value) {#}
+{#    echo '<input type="hidden" name="'.htmlspecialchars($name).'" value="'.htmlspecialchars($value).'" />';#}
+{#}#}
+{#?>#}
+        <p>{{ 'We have detected that there is only a few seconds since you last authenticated with this service provider, and therefore assume that there is a problem with this SP %SPENTITY%.' |trans({'%SPENTITY%': spEntityID}) }} </p>
+        <input type="hidden" name="StateId" value="{{ stateId }}">
+
+        {#  Add trackID #}
+
+    <input type="submit" name="continue" id="contbutton" value="{{ 'Retry Login'|trans }}" />
+
+</form>
+
+{% endblock content %}
