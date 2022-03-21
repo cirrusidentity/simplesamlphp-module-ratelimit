@@ -105,7 +105,7 @@ abstract class BaseLimitTest extends TestCase
     private function getStoreValueFor(string $key)
     {
         /** @var string $storeType */
-        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $storeType = Configuration::getConfig()->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
         /** @var int|null */

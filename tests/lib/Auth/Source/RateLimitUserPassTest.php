@@ -50,7 +50,7 @@ class RateLimitUserPassTest extends TestCase
           'AuthId' => 'admin'
         ];
         /** @var string $storeType */
-        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $storeType = Configuration::getConfig()->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
         $source = new RateLimitUserPass($info, $authsourceConfig);
@@ -109,7 +109,7 @@ class RateLimitUserPassTest extends TestCase
         ];
         $source = new RateLimitUserPass($info, $authsourceConfig);
         /** @var string $storeType */
-        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $storeType = Configuration::getConfig()->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
 
