@@ -19,7 +19,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         // Device Cookie has a long window to store the cookie value
         parent::__construct($config, 'P28D');
         /** @var string deviceCookieName */
-        $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
+        $this->deviceCookieName = $config->getOptionalString('deviceCookieName', 'deviceCookie');
     }
 
     public function getRateLimitKey(string $username, string $password): string
@@ -94,7 +94,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         $params = array(
             'lifetime' => $this->window,
             'path' => Configuration::getConfig()->getBasePath(),
-            'secure'   => Configuration::getConfig()->getBoolean('session.cookie.secure', false),
+            'secure'   => Configuration::getConfig()->getOptionalBoolean('session.cookie.secure', false),
         );
 
         $httpUtils = new HTTP();

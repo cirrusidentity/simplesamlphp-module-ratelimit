@@ -74,10 +74,10 @@ class RateLimitUserPass extends UserPassBase
         $this->delegate = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegateConfig]);
 
         /** @var string $storeType */
-        $storeType = Configuration::getInstance()->getString('store.type', 'phpsession');
+        $storeType = Configuration::getInstance()->getOptionalString('store.type', 'phpsession');
         assert(StoreFactory::getInstance($storeType) !== false, "Store must be configured");
         /** @var array[] $rateLimitersConfig */
-        $rateLimitersConfig = $config->getArray('ratelimit', RateLimitUserPass::DEFAULT_CONFIG);
+        $rateLimitersConfig = $config->getOptionalArray('ratelimit', RateLimitUserPass::DEFAULT_CONFIG);
         foreach ($rateLimitersConfig as $rateConfig) {
             $this->rateLimiters[] = self::parseConfig($rateConfig);
         }

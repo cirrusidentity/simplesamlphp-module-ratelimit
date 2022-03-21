@@ -20,7 +20,7 @@ class IpLimiter extends UserPassBaseLimiter
     {
         parent::__construct($config);
         /** @var string[] whitelist */
-        $this->whitelist = $config->getArray('whitelist', []);
+        $this->whitelist = $config->getOptionalArray('whitelist', []);
     }
 
     public function allow(string $username, string $password): string
