@@ -7,6 +7,11 @@
         "simplesamlphp/composer-module-installer": "~1.1",
         "simplesamlphp/simplesamlphp": "^2.0.0-beta.11"
     },
+    "autoload": {
+        "psr-4": {
+            "SimpleSAML\\Module\\ratelimit\\": "lib"
+        }
+    },
     "autoload-dev": {
         "psr-4": {
             "SimpleSAML\\Test\\Module\\ratelimit\\": "tests/lib"
