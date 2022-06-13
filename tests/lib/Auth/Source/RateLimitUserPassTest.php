@@ -18,14 +18,30 @@ class RateLimitUserPassTest extends TestCase
      */
     private $mockHttp;
 
+    /** @var \SimpleSAML\Configuration */
+    private Configuration $sourceConfig;
+
+
     protected function setUp(): void
     {
-
         // Stub the setCookie method
         $this->mockHttp = test::double(HTTP::class, [
             'setCookie' => true,
         ]);
-        // Seems like generating the mock above may sometimes cause a default Configuration to be crated.
+
+        $this->sourceConfig = Configuration::loadFromArray([
+            'admin' => [
+                'core:AdminPassword',
+            ],
+
+            'limiter' => [
+                'ratelimit:RateLimitUserPass',
+                'delegate' => 'admin',
+            ],
+        ]);
+        Configuration::setPreLoadedConfig($this->sourceConfig, 'authsources.php');
+
+        // Seems like generating the mock above may sometimes cause a default Configuration to be created.
         Configuration::clearInternalState();
     }
 
@@ -42,9 +58,7 @@ class RateLimitUserPassTest extends TestCase
         //given: an authsource that delegates to AdminPassword
         $authsourceConfig = [
             'ratelimit:RateLimitUserPass',
-            'delegate' => [
-                'core:AdminPassword',
-            ],
+            'delegate' => 'admin',
         ];
         $info = [
           'AuthId' => 'admin'
@@ -89,10 +103,7 @@ class RateLimitUserPassTest extends TestCase
     {
         $authsourceConfig = [
             'ratelimit:RateLimitUserPass',
-            'delegate' => [
-                'core:AdminPassword',
-
-            ],
+            'delegate' => 'admin',
             'ratelimit' => [
                 0 => [
                     ExceptionThrowingLimiter::class,
