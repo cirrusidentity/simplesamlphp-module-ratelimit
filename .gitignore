@@ -6,3 +6,4 @@ vendor/
 modules/
 /tests/tmp
 /build
+composer.lock
