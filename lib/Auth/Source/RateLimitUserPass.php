@@ -31,7 +31,7 @@ class RateLimitUserPass extends UserPassBase
     /**
      * @var UserPassLimiter[]
      */
-    private array $rateLimiters;
+    private array $rateLimiters = [];
 
     private const DEFAULT_CONFIG = [
         0 => [
