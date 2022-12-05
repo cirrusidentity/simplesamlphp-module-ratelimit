@@ -14,8 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest, windows-latest]
-        php-versions: ['7.4']
-        # Need to remove goaop to get working on php 8 php-versions: ['7.4', '8.0', '8.1']
+        php-versions: ['7.4', '8.0', '8.1', '8.2']
 
     steps:
       - name: Setup PHP, with composer and extensions
@@ -23,7 +22,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           tools: composer:v2
-          extensions: ldap, mbstring, xml
+          extensions: ldap, mbstring, xml, ext-intl
           coverage: pcov
 
       - name: Setup problem matchers for PHP
