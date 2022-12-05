@@ -63,13 +63,14 @@ class RateLimitUserPass extends UserPassBase
         );
 
         // delegate to another named authsource
+        /** @var UserPassBase */
         $this->delegate = Source::getById($config->getString('delegate'), UserPassBase::class);
 
-        /** @var string $storeType */
         $storeType = Configuration::getInstance()->getOptionalString('store.type', 'phpsession');
+        $storeInstance = StoreFactory::getInstance($storeType);
         Assert::implementsInterface(
+            $storeInstance,
             StoreInterface::class,
-            StoreFactory::getInstance($storeType),
             "Store other than 'phpsession' must be configured."
         );
 

@@ -2,9 +2,9 @@
 
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
-use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use CirrusIdentity\SSP\Test\MockHttp;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
@@ -14,17 +14,27 @@ use SimpleSAML\Utils\HTTP;
 class DeviceCookieLimiterTest extends TestCase
 {
     /**
-     * @var \AspectMock\Proxy\ClassProxy|\AspectMock\Proxy\InstanceProxy|\AspectMock\Proxy\Verifier
+     * @var MockObject|HTTP
      */
     private $mockHttp;
 
+    /**
+     * @var list<?String> stored cookie values from invocations to the mock
+     */
+    private array $cookieValues = [];
+
     protected function setUp(): void
     {
-        test::clean();
+
         // Stub the setCookie method
-        $this->mockHttp = test::double(HTTP::class, [
-            'setCookie' => true,
-        ]);
+        $this->mockHttp = $this->createMock(HTTP::class);
+        $this->mockHttp->method('setCookie')
+            ->with('deviceCookie', $this->callback(
+                function (?string $cookieValue) {
+                    $this->cookieValues[] = $cookieValue;
+                    return true;
+                }
+            ));
     }
 
     protected function tearDown(): void
@@ -150,14 +160,10 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals('continue', $limiter->allow('u', 'p'));
     }
 
-    private function getDeviceCookieFromMock(string $cookieName = 'deviceCookie'): string
+    private function getDeviceCookieFromMock(): string
     {
-        /** @var array<int, array{0: string, 1: string}> $invocations */
-        $invocations = $this->mockHttp->getCallsForMethod('setCookie');
-        $this->assertCount(1, $invocations, 'Unexpected # of setCookie invocations');
-        $args = $invocations[0];
-        $this->assertEquals($cookieName, $args[0]);
-        return $args[1];
+        $this->assertCount(1, $this->cookieValues, 'Unexpected # of setCookie invocations');
+        return $this->cookieValues[0];
     }
 
     /**
@@ -177,6 +183,9 @@ class DeviceCookieLimiterTest extends TestCase
 
     protected function getLimiter(array $config): DeviceCookieLimiter
     {
-        return new DeviceCookieLimiter(Configuration::loadFromArray($config));
+        $limiter =  new DeviceCookieLimiter(Configuration::loadFromArray($config));
+        /** @psalm-suppress MixedArgument,PossiblyInvalidArgument */
+        $limiter->setHttp($this->mockHttp);
+        return $limiter;
     }
 }

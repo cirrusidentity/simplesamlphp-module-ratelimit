@@ -57,9 +57,10 @@ class IpLimiterTest extends BaseLimitTest
      */
     public function testKeyVariesWithInput(): void
     {
+        /** @var IpLimiter $limiter */
         $limiter = $this->getLimiter([]);
         $key1 = $limiter->getRateLimitKey('u', 'p');
-        $_SERVER['REMOTE_ADDR'] = '1.2.3.4';
+        $limiter->setClientIpAddress('1.2.3.4');
         $key2 = $limiter->getRateLimitKey('u', 'p');
         $this->assertNotEquals($key1, $key2, 'keys should vary');
     }

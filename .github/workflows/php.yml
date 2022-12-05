@@ -200,7 +200,7 @@ jobs:
 
       - name: Psalm
         if: always()
-        run: php vendor/bin/psalm --show-info=true
+        run: php vendor/bin/psalm  --no-cache --show-info=true
 
       - name: Psalter
         if: always()
