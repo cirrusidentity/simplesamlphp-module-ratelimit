@@ -2,34 +2,20 @@
 
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
-use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\Store\StoreInterface;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
-use SimpleSAML\Utils\HTTP;
 
 class RateLimitUserPassTest extends TestCase
 {
-    /**
-     * @var HTTP|\AspectMock\Proxy\ClassProxy|\AspectMock\Proxy\InstanceProxy|\AspectMock\Proxy\Verifier|null
-     */
-    private $mockHttp;
-
-    /** @var \SimpleSAML\Configuration */
-    private Configuration $sourceConfig;
-
-
     protected function setUp(): void
     {
         // Stub the setCookie method
-        $this->mockHttp = test::double(HTTP::class, [
-            'setCookie' => true,
-        ]);
-
-        $this->sourceConfig = Configuration::loadFromArray([
+        $sourceConfig = Configuration::loadFromArray([
             'admin' => [
                 'core:AdminPassword',
             ],
@@ -39,10 +25,9 @@ class RateLimitUserPassTest extends TestCase
                 'delegate' => 'admin',
             ],
         ]);
-        Configuration::setPreLoadedConfig($this->sourceConfig, 'authsources.php');
-
         // Seems like generating the mock above may sometimes cause a default Configuration to be created.
         Configuration::clearInternalState();
+        Configuration::setPreLoadedConfig($sourceConfig, 'authsources.php');
     }
 
     protected function tearDown(): void
@@ -63,10 +48,12 @@ class RateLimitUserPassTest extends TestCase
         $info = [
           'AuthId' => 'admin'
         ];
-        /** @var string $storeType */
-        $storeType = Configuration::getConfig()->getOptionalString('store.type', 'phpsession');
+        /** @var string|null $storeType needed until a release includes simplesamlphp/simplesamlphp/pull/1722 */
+        $storeType = Configuration::getInstance()->getOptionalString('store.type', null);
+        $this->assertNotNull($storeType, 'store.type must be configured');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
+        $this->assertInstanceOf(StoreInterface::class, $store);
         $source = new RateLimitUserPass($info, $authsourceConfig);
 
         //when: attempting authentication with the correct password
@@ -119,7 +106,6 @@ class RateLimitUserPassTest extends TestCase
             'AuthId' => 'admin'
         ];
         $source = new RateLimitUserPass($info, $authsourceConfig);
-        /** @var string $storeType */
         $storeType = Configuration::getConfig()->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);

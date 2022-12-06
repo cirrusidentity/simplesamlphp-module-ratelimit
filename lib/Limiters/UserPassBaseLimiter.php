@@ -27,10 +27,9 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
     /**
      * UserPassBaseLimiter constructor.
      */
-    public function __construct(Configuration $config, ?string $defaultWindow = 'PT5M')
+    public function __construct(Configuration $config, string $defaultWindow = 'PT5M')
     {
         $timeUtils = new Time();
-        /** @var string $windowDuration */
         $windowDuration = $config->getOptionalString('window', $defaultWindow);
         $this->window = $timeUtils->parseDuration($windowDuration, 0);
 
@@ -39,7 +38,6 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
             $this->window,
             'Invalid duration \'' . $this->window . '\'. Defaulting to 5m'
         );
-        /** @var int limit */
         $this->limit = $config->getOptionalInteger('limit', 15);
     }
 
@@ -110,7 +108,6 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
     public function getStore(): StoreInterface
     {
         $config = Configuration::getInstance();
-        /** @var string $storeType */
         $storeType = $config->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         assert($store !== false, "Store must be configured");
