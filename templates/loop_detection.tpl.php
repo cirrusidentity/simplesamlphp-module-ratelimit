@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Template which is shown when there is only a short interval since the user was last authenticated.
  *
@@ -8,7 +9,6 @@
  *
  * @package SimpleSAMLphp
  */
-
 
 $this->data['header'] = $this->t('{ratelimit:loop_detection:warning_header}');
 $this->data['autofocus'] = 'contbutton';
@@ -24,7 +24,7 @@ $contButton = htmlspecialchars($this->t('{ratelimit:loop_detection:retry}'));
 <?php
 // Embed hidden fields...
 foreach ($this->data['params'] as $name => $value) {
-    echo '<input type="hidden" name="'.htmlspecialchars($name).'" value="'.htmlspecialchars($value).'" />';
+    echo '<input type="hidden" name="' . htmlspecialchars($name) . '" value="' . htmlspecialchars($value) . '" />';
 }
 ?>
     <p><?php echo $this->t('{ratelimit:loop_detection:warning}'); ?></p>

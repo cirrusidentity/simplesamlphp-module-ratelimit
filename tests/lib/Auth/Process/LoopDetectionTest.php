@@ -2,7 +2,6 @@
 
 namespace SimpleSAML\Test\Module\ratelimit\Auth\Process;
 
-use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use CirrusIdentity\SSP\Test\MockHttp;
@@ -14,24 +13,23 @@ use SimpleSAML\Module\ratelimit\Auth\Process\LoopDetection;
 use SimpleSAML\Session;
 use SimpleSAML\TestUtils\ClearStateTestCase;
 use SimpleSAML\TestUtils\StateClearer;
+use SimpleSAML\Utils\HTTP;
 
 class LoopDetectionTest extends TestCase
 {
     public function setUp(): void
     {
         (new StateClearer())->clearSSPState();
-        MockHttp::throwOnRedirectTrustedURL();
     }
 
 
     protected function tearDown(): void
     {
         InMemoryStore::clearInternalState();
-        test::clean(); // remove all registered test doubles
     }
 
 
-    private function getState()
+    private function getState(): array
     {
         $state = [
            'PreviousSSOTimestamp' => strtotime('2011-11-11T11:11:11Z'),
@@ -40,7 +38,12 @@ class LoopDetectionTest extends TestCase
     }
 
 
-    private function getConfig()
+    /**
+     * @return (false|int|string)[]
+     *
+     * @psalm-return array{class: 'ratelimit:LoopDetection', secondsSinceLastSso: 1, loopsBeforeWarning: 5, logOnly: false}
+     */
+    private function getConfig(): array
     {
         $config = [
             'class' => 'ratelimit:LoopDetection',
@@ -63,36 +66,35 @@ class LoopDetectionTest extends TestCase
         return $session;
     }
 
-    public function testLoopDetectionRedirect()
+    public function testLoopDetectionRedirect(): void
     {
         $state = $this->getState();
         $config = $this->getConfig();
         $session = $this->getSession();
-        $expectedUrl = 'http://localhost/module.php/ratelimit/loop_detection.php';
+        $expectedUrl = 'http://localhost/module.php/ratelimit/loop_detection';
 
         $emptyState = [];
+        $mockHttp = $this->createMock(HTTP::class);
+        $mockHttp->method('redirectTrustedURL')
+            ->with(
+                $expectedUrl,
+                $this->arrayHasKey('StateId')
+            )
+            ->willThrowException(new \Exception('Redirect expected'));
+
         $source = new LoopDetection($config, null);
+        $source->setHttp($mockHttp);
 
         $source->process($emptyState);
 
         $session->setData('ratelimit:loopDetection', 'Count', 11);
         $state['PreviousSSOTimestamp'] = time();
 
-        try {
-            $source->process($state);
-            $this->fail('Redirect exception expected');
-        } catch (RedirectException $e) {
-            $this->assertEquals('redirectTrustedURL', $e->getMessage());
-            $this->assertEquals(
-                $expectedUrl,
-                $e->getUrl(),
-                "First argument should be the redirect url"
-            );
-            $this->assertArrayHasKey('StateId', $e->getParams(), "StateId is added");
-        }
+        $this->expectExceptionMessage('Redirect expected');
+        $source->process($state);
     }
 
-    public function testLoopDetectionLogOnly()
+    public function testLoopDetectionLogOnly(): void
     {
         $state = $this->getState();
         $config = $this->getConfig();
@@ -112,7 +114,7 @@ class LoopDetectionTest extends TestCase
         $this->assertEquals(12, $session->getData('ratelimit:loopDetection', 'Count'));
     }
 
-    public function testLoopDetectionIncrementCount()
+    public function testLoopDetectionIncrementCount(): void
     {
         $state = $this->getState();
         $state['PreviousSSOTimestamp'] = time();

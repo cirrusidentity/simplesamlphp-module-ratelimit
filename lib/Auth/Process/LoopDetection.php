@@ -12,6 +12,7 @@ use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Session;
 use SimpleSAML\Utils;
+use SimpleSAML\Utils\HTTP;
 
 /**
  * Give a warning to the user if we receive multiple requests in a short time.
@@ -21,39 +22,37 @@ use SimpleSAML\Utils;
 class LoopDetection extends ProcessingFilter
 {
     /**
-     * Increase count if less than this number of seconds since Previous SSO
-     * @var int
+     * Increase loop count if less than this number of seconds since Previous SSO
      */
     private int $secondsSinceLastSso;
 
 
     /**
      * The number of loops before warning/redirecting
-     * @var int
      */
     private int $loopsBeforeWarning;
 
     /**
      * Only log a warning instead of redirecting user.
-     * @var bool
      */
     private bool $logOnly;
 
+    private ?HTTP $http = null;
 
     /**
-     * @inheritdoc
+     * Initialize this filter.
+     *
+     * @param array &$configArray Configuration information about this filter.
+     * @param mixed $reserved For future use.
      */
     public function __construct(array &$configArray, $reserved)
     {
         parent::__construct($configArray, $reserved);
         $config = Configuration::loadFromArray($configArray);
 
-        /** @var int secondsSinceLastSso */
         $this->secondsSinceLastSso = $config->getInteger('secondsSinceLastSso');
-        /** @var int loopsBeforeWarning */
         $this->loopsBeforeWarning = $config->getInteger('loopsBeforeWarning');
-        /** @var bool logOnly */
-        $this->logOnly = $config->getBoolean('logOnly', true);
+        $this->logOnly = $config->getOptionalBoolean('logOnly', true);
     }
 
 
@@ -70,16 +69,21 @@ class LoopDetection extends ProcessingFilter
     {
         $session = Session::getSessionFromRequest();
 
-        if (!array_key_exists('PreviousSSOTimestamp', $state)) {
+        /** @var mixed $previousTimestamp */
+        $previousTimestamp = $state['PreviousSSOTimestamp'] ?? null;
+        if (is_null($previousTimestamp)) {
             /*
              * No timestamp from the previous SSO to this SP. This is the first
              * time during this session.
              */
             $session->setData('ratelimit:loopDetection', 'Count', 0);
             return;
+        } elseif (!is_int($previousTimestamp)) {
+            Logger::warning('PreviousSSOTimestamp is not an int. Skipping loop detection');
+            return;
         }
 
-        $timeDelta = time() - $state['PreviousSSOTimestamp'];
+        $timeDelta = time() - $previousTimestamp;
         if ($timeDelta >= $this->secondsSinceLastSso) {
             // At least 10 seconds since last attempt
             $session->setData('ratelimit:loopDetection', 'Count', 0);
@@ -92,6 +96,7 @@ class LoopDetection extends ProcessingFilter
 
         $session->setData('ratelimit:loopDetection', 'Count', $loopDetectionCount);
 
+        /** @var string $entityId */
         $entityId =  $state['Destination']['entityid'] ?? 'UNKNOWN';
 
         if ($loopDetectionCount <= $this->loopsBeforeWarning) {
@@ -112,8 +117,27 @@ class LoopDetection extends ProcessingFilter
             // Save state and redirect
             $id = State::saveState($state, 'ratelimit:loop_detection');
             $url = Module::getModuleURL('ratelimit/loop_detection');
-            $httpUtils = new Utils\HTTP();
-            $httpUtils->redirectTrustedURL($url, ['StateId' => $id]);
+            $this->getHttp()->redirectTrustedURL($url, ['StateId' => $id]);
         }
+    }
+
+    /**
+     * Used to allow tests to override
+     * @return HTTP
+     */
+    public function getHttp(): HTTP
+    {
+        if (!isset($this->http)) {
+            $this->http = new HTTP();
+        }
+        return $this->http;
+    }
+
+    /**
+     * @param ?HTTP $http
+     */
+    public function setHttp(?HTTP $http): void
+    {
+        $this->http = $http;
     }
 }

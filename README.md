@@ -77,7 +77,7 @@ $config = [
                        '5.6.7.0/24',
                     ],
                ],
-          ] //
+          ]
 ```
 
 If no `ratelimit` block is defined then the `UsernameLimiter` and `DeviceCookieLimiter`
@@ -119,11 +119,12 @@ docker run -d --name ssp-ratelimit \
    --mount type=bind,source="$(pwd)",target=/var/simplesamlphp/staging-modules/ratelimit,readonly \
   -e STAGINGCOMPOSERREPOS=ratelimit \
   -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-ratelimit:@dev" \
+  -e SSP_ENABLED_MODULES="ratelimit" \
   --mount type=bind,source="$(pwd)/tests/docker/metadata/",target=/var/simplesamlphp/metadata/,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/cert/",target=/var/simplesamlphp/cert/,readonly \
-   -p 443:443 cirrusid/simplesamlphp:2.0.0-beta.1
+   -p 443:443 cirrusid/simplesamlphp:v2.0.0-rc2.20221109T222122
 ```
 
 Then log in as `admin:secret` to https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/core/frontpage_welcome.php

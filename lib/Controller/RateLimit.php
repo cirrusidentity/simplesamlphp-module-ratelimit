@@ -46,6 +46,7 @@ class RateLimit
     public function loopDetection(Request $request): Response
     {
 
+        /** @var string|null $stateId */
         $stateId = $request->query->get('StateId');
         if ($stateId === null) {
             throw new BadRequest('Missing required StateId query parameter.');
@@ -61,6 +62,7 @@ class RateLimit
         $t = new Template($this->config, 'ratelimit:loop_detection.twig');
         $t->data['stateId'] = $stateId;
         $t->data['trackId'] = $session->getTrackID();
+        /** @psalm-suppress MixedArrayAccess */
         $t->data['spEntityID'] = $state['Destination']['entityid'];
         return $t;
     }

@@ -1,6 +1,5 @@
 <?php
 
-
 $config = array(
 
     // This is a authentication source which handles admin authentication.
