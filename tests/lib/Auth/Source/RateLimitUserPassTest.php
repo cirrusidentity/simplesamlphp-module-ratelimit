@@ -3,14 +3,12 @@
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
 use CirrusIdentity\SSP\Test\InMemoryStore;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Store\StoreInterface;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
-use SimpleSAML\Utils\HTTP;
 
 class RateLimitUserPassTest extends TestCase
 {
@@ -50,6 +48,7 @@ class RateLimitUserPassTest extends TestCase
         $info = [
           'AuthId' => 'admin'
         ];
+        /** @var string|null $storeType needed until a release includes simplesamlphp/simplesamlphp/pull/1722 */
         $storeType = Configuration::getInstance()->getOptionalString('store.type', null);
         $this->assertNotNull($storeType, 'store.type must be configured');
         $store = StoreFactory::getInstance($storeType);

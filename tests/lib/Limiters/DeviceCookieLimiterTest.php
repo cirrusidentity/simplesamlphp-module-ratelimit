@@ -3,12 +3,10 @@
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
 use CirrusIdentity\SSP\Test\InMemoryStore;
-use CirrusIdentity\SSP\Test\MockHttp;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
-use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Utils\HTTP;
 
 class DeviceCookieLimiterTest extends TestCase

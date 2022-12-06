@@ -4,7 +4,6 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
-use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Utils\HTTP;
 
 class DeviceCookieLimiter extends UserPassBaseLimiter

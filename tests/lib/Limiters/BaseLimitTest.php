@@ -6,7 +6,6 @@ use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
-use SimpleSAML\Store;
 use SimpleSAML\Store\StoreFactory;
 
 abstract class BaseLimitTest extends TestCase
