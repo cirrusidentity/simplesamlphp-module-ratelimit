@@ -4,7 +4,6 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
-use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Utils\HTTP;
 
 class DeviceCookieLimiter extends UserPassBaseLimiter
@@ -14,12 +13,13 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
      */
     private string $deviceCookieName;
 
+    private ?HTTP $http = null;
+
     public function __construct(Configuration $config)
     {
         // Device Cookie has a long window to store the cookie value
         parent::__construct($config, 'P28D');
-        /** @var string deviceCookieName */
-        $this->deviceCookieName = $config->getString('deviceCookieName', 'deviceCookie');
+        $this->deviceCookieName = $config->getOptionalString('deviceCookieName', 'deviceCookie');
     }
 
     public function getRateLimitKey(string $username, string $password): string
@@ -94,11 +94,10 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         $params = array(
             'lifetime' => $this->window,
             'path' => Configuration::getConfig()->getBasePath(),
-            'secure'   => Configuration::getConfig()->getBoolean('session.cookie.secure', false),
+            'secure'   => Configuration::getConfig()->getOptionalBoolean('session.cookie.secure', false),
         );
 
-        $httpUtils = new HTTP();
-        $httpUtils->setCookie(
+        $this->getHttp()->setCookie(
             $this->deviceCookieName,
             $cookieValue,
             $params
@@ -107,12 +106,35 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
 
     private function checkForDeviceCookie(): string
     {
-        /** @var string */
+        /**
+         * @var string
+         * @psalm-suppress PossiblyInvalidArrayOffset
+         */
         return $_COOKIE[$this->deviceCookieName];
     }
 
     private function hasDeviceCookieSet(): bool
     {
         return array_key_exists($this->deviceCookieName, $_COOKIE);
+    }
+
+    /**
+     * Used to allow tests to override
+     * @return HTTP
+     */
+    public function getHttp(): HTTP
+    {
+        if (!isset($this->http)) {
+            $this->http = new HTTP();
+        }
+        return $this->http;
+    }
+
+    /**
+     * @param ?HTTP $http
+     */
+    public function setHttp(?HTTP $http): void
+    {
+        $this->http = $http;
     }
 }

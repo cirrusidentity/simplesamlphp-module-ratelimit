@@ -6,7 +6,6 @@ use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
-use SimpleSAML\Store;
 use SimpleSAML\Store\StoreFactory;
 
 abstract class BaseLimitTest extends TestCase
@@ -102,10 +101,9 @@ abstract class BaseLimitTest extends TestCase
      * @return int|null
      * @throws \SimpleSAML\Error\CriticalConfigurationError
      */
-    private function getStoreValueFor(string $key)
+    private function getStoreValueFor(string $key): ?int
     {
-        /** @var string $storeType */
-        $storeType = Configuration::getConfig()->getString('store.type', 'phpsession');
+        $storeType = Configuration::getConfig()->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         $this->assertNotFalse($store, 'Store was not configured for ' . $storeType);
         /** @var int|null */

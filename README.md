@@ -134,7 +134,7 @@ You can
 
 Run `phpcs` to check code style
 
-    ./vendor/bin/phpcs lib/ tests/
+    ./vendor/bin/phpcs
 
 Run `phpunit` to test
 
@@ -142,8 +142,9 @@ Run `phpunit` to test
     
 You can auto correct some findings from phpcs. It is recommended you do this after stage your changes (or maybe even commit) since there is a non-trivial chance it will just mess up your code.
 
-    ./vendor/bin/phpcbf --ignore=somefile.php --standard=PSR2 lib/ tests/
+    ./vendor/bin/phpcbf
 
-Run `psalm` to test four quality
+I always have trouble with `psalm` and it's cache, so I tend to run without caching
 
-    ./vendor/bin/psalm
+     ./vendor/bin/psalm --no-cache
+

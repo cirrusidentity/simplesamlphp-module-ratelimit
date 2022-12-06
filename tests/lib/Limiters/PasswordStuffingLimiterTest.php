@@ -5,7 +5,6 @@ namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 use CirrusIdentity\SSP\Test\InMemoryStore;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 
 class PasswordStuffingLimiterTest extends BaseLimitTest

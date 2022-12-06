@@ -13,8 +13,7 @@
         <directory name="tests" />
 <!--        <directory name="templates" /> -->
         <ignoreFiles>
-            <file name="vendor/simplesamlphp/simplesamlphp/modules/core/lib/Auth/UserPassBase.php" />
-            <directory name="tests/tmp" />
+            <file name="vendor/simplesamlphp/simplesamlphp/modules/core/src/Auth/UserPassBase.php" />
             <directory name="tests/config" />
         </ignoreFiles>
     </projectFiles>

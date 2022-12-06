@@ -22,8 +22,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
         parent::__construct($config);
 
         // We aren't storing the whole hash or for very long, so favor speed
-        /** @var int cost */
-        $this->cost = $config->getInteger('hashCost', 8);
+        $this->cost = $config->getOptionalInteger('hashCost', 8);
 
         Assert::range($this->cost, 4, 31, 'The cost must be an integer between 4 and 31.');
     }

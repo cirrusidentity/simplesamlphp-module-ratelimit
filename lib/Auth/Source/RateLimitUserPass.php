@@ -2,7 +2,6 @@
 
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
-use ReflectionClass;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Configuration;
@@ -16,6 +15,7 @@ use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
 use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\Store\StoreInterface;
 
 /**
  * Auth source that rate limits user and password attempts
@@ -31,7 +31,7 @@ class RateLimitUserPass extends UserPassBase
     /**
      * @var UserPassLimiter[]
      */
-    private array $rateLimiters;
+    private array $rateLimiters = [];
 
     private const DEFAULT_CONFIG = [
         0 => [
@@ -61,27 +61,26 @@ class RateLimitUserPass extends UserPassBase
             $configArray,
             'Authentication source ' . var_export($this->authId, true)
         );
-        // delegate to another named authsourc has security issues since delgated authsource can be invoked by attacker
-        //$this->delegate = Source::getById($config->getString('delegate'), UserPassBase::class);
 
-        // instead make parseAuthSource accessible and call it
-        /** @var array $delegateConfig */
-        $delegateConfig = $config->getArray('delegate');
-        $class = new ReflectionClass(Source::class);
-        $method = $class->getMethod('parseAuthSource');
-        $method->setAccessible(true);
-        /** @var UserPassBase delegate */
-        $this->delegate = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegateConfig]);
+        // delegate to another named authsource
+        /** @var UserPassBase */
+        $this->delegate = Source::getById($config->getString('delegate'), UserPassBase::class);
 
-        /** @var string $storeType */
-        $storeType = Configuration::getInstance()->getString('store.type', 'phpsession');
-        assert(StoreFactory::getInstance($storeType) !== false, "Store must be configured");
+        $storeType = Configuration::getInstance()->getOptionalString('store.type', 'phpsession');
+        $storeInstance = StoreFactory::getInstance($storeType);
+        Assert::implementsInterface(
+            $storeInstance,
+            StoreInterface::class,
+            "Store other than 'phpsession' must be configured."
+        );
+
         /** @var array[] $rateLimitersConfig */
-        $rateLimitersConfig = $config->getArray('ratelimit', RateLimitUserPass::DEFAULT_CONFIG);
+        $rateLimitersConfig = $config->getOptionalArray('ratelimit', RateLimitUserPass::DEFAULT_CONFIG);
         foreach ($rateLimitersConfig as $rateConfig) {
             $this->rateLimiters[] = self::parseConfig($rateConfig);
         }
     }
+
 
     /**
      * @param array $rateConfig
@@ -109,6 +108,7 @@ class RateLimitUserPass extends UserPassBase
                 return $obj;
         }
     }
+
 
     /**
      * Performs rate limiting of a delegated authsource.
@@ -142,6 +142,7 @@ class RateLimitUserPass extends UserPassBase
         return $attributes;
     }
 
+
     /**
      * @param float $timeStart The time the login method started
      * @param float $timeDelegateStart The time we started delegating to another authsource
@@ -153,6 +154,7 @@ class RateLimitUserPass extends UserPassBase
         $overHead = (microtime(true) - $timeStart) - $delegateTime;
         Logger::debug(sprintf("Timer: Rate Limit overhead %f, underlying source took %f", $overHead, $delegateTime));
     }
+
 
     /**
      * Determine if this authentication attempt should be allowed
@@ -186,6 +188,7 @@ class RateLimitUserPass extends UserPassBase
         return true;
     }
 
+
     /**
      * Record failed authentication in each limiter
      * @param string $username The user that authenticated
@@ -204,6 +207,7 @@ class RateLimitUserPass extends UserPassBase
             }
         }
     }
+
 
     /**
      * Record successful authentication in each limiter
