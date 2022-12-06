@@ -2,6 +2,7 @@
 
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
+use ReflectionClass;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Configuration;
@@ -61,10 +62,7 @@ class RateLimitUserPass extends UserPassBase
             $configArray,
             'Authentication source ' . var_export($this->authId, true)
         );
-
-        // delegate to another named authsource
-        /** @var UserPassBase */
-        $this->delegate = Source::getById($config->getString('delegate'), UserPassBase::class);
+        $this->delegate = $this->resolveDelegateConfig($config->getValue('delegate'));
 
         $storeType = Configuration::getInstance()->getOptionalString('store.type', 'phpsession');
         $storeInstance = StoreFactory::getInstance($storeType);
@@ -79,6 +77,29 @@ class RateLimitUserPass extends UserPassBase
         foreach ($rateLimitersConfig as $rateConfig) {
             $this->rateLimiters[] = self::parseConfig($rateConfig);
         }
+    }
+
+    /**
+     * @param mixed $delegate
+     * @return UserPassBase
+     */
+    private function resolveDelegateConfig($delegate): UserPassBase
+    {
+        if (is_string($delegate)) {
+            // delegate to another named authsource
+            /** @var UserPassBase */
+            $authInstance = Source::getById($delegate, UserPassBase::class);
+        } elseif (is_array($delegate)) {
+            $class = new ReflectionClass(Source::class);
+            $method = $class->getMethod('parseAuthSource');
+            $method->setAccessible(true);
+            /** @var UserPassBase */
+            $authInstance = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegate]);
+        } else {
+            throw new \Exception('Invalid configuration for delegate. Must be string or array');
+        }
+        Assert::isInstanceOf($authInstance, UserPassBase::class);
+        return $authInstance;
     }
 
 
@@ -226,5 +247,14 @@ class RateLimitUserPass extends UserPassBase
                 continue;
             }
         }
+    }
+
+    /**
+     * Used for validation testing
+     * @return UserPassBase
+     */
+    public function getDelegate(): UserPassBase
+    {
+        return $this->delegate;
     }
 }

@@ -6,6 +6,7 @@ use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
+use SimpleSAML\Module\core\Auth\Source\AdminPassword;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Store\StoreInterface;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
@@ -38,7 +39,7 @@ class RateLimitUserPassTest extends TestCase
         unset($_COOKIE['deviceCookie']);
     }
 
-    public function testWrapAdminSource(): void
+    public function testLinkedAdminSource(): void
     {
         //given: an authsource that delegates to AdminPassword
         $authsourceConfig = [
@@ -80,6 +81,23 @@ class RateLimitUserPassTest extends TestCase
             $this->checkPassword($source, 'admin', 'secret'),
             'Even correct password is locked out'
         );
+    }
+
+    public function testEmbeddedAdminSource(): void
+    {
+        //given: an authsource that embeds to AdminPassword
+        $authsourceConfig = [
+            'ratelimit:RateLimitUserPass',
+            'delegate' => [
+                'core:AdminPassword',
+            ],
+        ];
+        $info = [
+            'AuthId' => 'admin'
+        ];
+
+        $source = new RateLimitUserPass($info, $authsourceConfig);
+        $this->assertInstanceOf(AdminPassword::class, $source->getDelegate());
     }
 
     /**
