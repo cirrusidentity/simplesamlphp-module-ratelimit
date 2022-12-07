@@ -223,7 +223,7 @@ with loop detection and will display an error page after too many loops.
 
 
 ```
-
+WARNING [c854ab328b] LoopDetection: Only 0 seconds since last SSO for this user from the SP 'https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/saml/sp/metadata.php/loop-test' LoopDetectionCount 5
 ```
 
 # Development

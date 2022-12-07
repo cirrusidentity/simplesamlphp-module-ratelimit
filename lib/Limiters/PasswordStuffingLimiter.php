@@ -54,7 +54,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
          * the salt on failure.'. Failure reasons can include a salt with special characters or a small salt.
          */
         if (strlen($hash) < 13) {
-            throw new \RuntimeException('Unable to generate password hash key.');
+            throw new \RuntimeException('Unable to generate password hash key');
         }
 
 
