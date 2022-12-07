@@ -13,10 +13,10 @@
 
         <form id="loop_acknowledge" action="{{ moduleURL('ratelimit/loop_detection') }}">
 
-        <p>{{  'App Loop Message' |trans({'%APPNAME%': spEntityID}) }} </p>
+        <p>{{  'App Loop Message' |trans({'%APPNAME%': appName}) }} </p>
         <input type="hidden" name="StateId" value="{{ stateId }}">
 
-{#          Add trackID#}
+{#       Add a 'If reporting this issue' message that includes tractId, timestamp and user IP #}
 
     <input type="submit" name="continue" id="contbutton" value="{{ 'Retry Login Button'|trans }}" />
 

@@ -14,11 +14,10 @@ $httpUtils = new \SimpleSAML\Utils\HTTP();
 $returnTo = $httpUtils->getSelfURL();
 if (!$as->isAuthenticated() || $loop > 0) {
     $loop--;
-    if ($loop > 0) {
-        $returnTo = $httpUtils->addURLParameters($returnTo, ['loop' => $loop]);
-    } else {
-        $queryParts['loop'] = $loop;
+    if ($loop < 0) {
+        $loop = 0;
     }
+    $returnTo = $httpUtils->addURLParameters($returnTo, ['loop' => $loop]);
     $params = array(
         'ReturnTo' => $returnTo,
     );
@@ -26,7 +25,7 @@ if (!$as->isAuthenticated() || $loop > 0) {
 }
 
 $attributes = $as->getAttributes();
-$startLoopUrl = $httpUtils->addURLParameters($returnTo, ['loop' => 10]);
+$startLoopUrl = $httpUtils->addURLParameters($returnTo, ['loop' => 6]);
 
 echo "<p><a href='$startLoopUrl'>Test Looping</a></p>";
 echo "<pre>";

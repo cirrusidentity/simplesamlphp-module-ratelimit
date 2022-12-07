@@ -1,4 +1,5 @@
 <?php
+
 namespace SimpleSAML\Module\ratelimit\Controller;
 
 use SimpleSAML\Auth\ProcessingChain;
@@ -53,7 +54,7 @@ class RateLimit
         $state = State::loadState($stateId, 'ratelimit:loop_detection');
         $session = Session::getSessionFromRequest();
 
-        if ($request->request->has('continue')) {
+        if ($request->query->has('continue')) {
             // The user has pressed the continue/retry-button
             return new RunnableResponse([ProcessingChain::class, 'resumeProcessing'], [$state]);
         }
@@ -62,7 +63,7 @@ class RateLimit
         $t->data['stateId'] = $stateId;
         $t->data['trackId'] = $session->getTrackID();
         /** @psalm-suppress MixedArrayAccess */
-        $t->data['spEntityID'] = $state['Destination']['entityid'];
+        $t->data['appName'] = $state['Destination']['entityid'];
         return $t;
     }
 }

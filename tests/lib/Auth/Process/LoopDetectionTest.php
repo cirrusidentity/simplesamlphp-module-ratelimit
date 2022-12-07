@@ -41,7 +41,8 @@ class LoopDetectionTest extends TestCase
     /**
      * @return (false|int|string)[]
      *
-     * @psalm-return array{class: 'ratelimit:LoopDetection', secondsSinceLastSso: 1, loopsBeforeWarning: 5, logOnly: false}
+     * @psalm-return array{class: 'ratelimit:LoopDetection', secondsSinceLastSso: 1,
+     * loopsBeforeWarning: 5, logOnly: false}
      */
     private function getConfig(): array
     {
