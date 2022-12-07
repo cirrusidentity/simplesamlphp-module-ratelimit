@@ -9,12 +9,12 @@
     },
     "autoload": {
         "psr-4": {
-            "SimpleSAML\\Module\\ratelimit\\": "lib"
+            "SimpleSAML\\Module\\ratelimit\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "SimpleSAML\\Test\\Module\\ratelimit\\": "tests/lib"
+            "SimpleSAML\\Test\\Module\\ratelimit\\": "tests/src"
         }
     },
     "require-dev": {
@@ -22,12 +22,6 @@
         "cirrusidentity/simplesamlphp-test-utils": "v2.x-dev",
         "simplesamlphp/simplesamlphp-test-framework": "~1.2.1"
     },
-    "scripts": {
-        "pre-autoload-dump": [
-            "echo 'The tests/tmp directory should be removed to avoid aop cache issues'",
-            "rm -rf tests/tmp"
-        ]
-     },
     "config": {
         "allow-plugins": {
             "composer/package-versions-deprecated": true,

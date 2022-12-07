@@ -6,7 +6,7 @@
         By default it is less stringent about long lines than other coding standards
     </description>
 
-    <file>lib</file>
+    <file>src</file>
     <file>tests</file>
     <file>templates</file>
 
