@@ -10,11 +10,15 @@ use SimpleSAML\Module\core\Auth\Source\AdminPassword;
 use SimpleSAML\Store\StoreFactory;
 use SimpleSAML\Store\StoreInterface;
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
+use SimpleSAML\TestUtils\StateClearer;
+use SimpleSAML\Utils\HTTP;
 
 class RateLimitUserPassTest extends TestCase
 {
     protected function setUp(): void
     {
+
+        (new StateClearer())->clearSSPState();
         // Stub the setCookie method
         $sourceConfig = Configuration::loadFromArray([
             'admin' => [

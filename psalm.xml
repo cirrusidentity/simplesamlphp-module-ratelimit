@@ -11,10 +11,12 @@
     <projectFiles>
         <directory name="lib" />
         <directory name="tests" />
+        <directory name="templates" />
 <!--        <directory name="templates" /> -->
         <ignoreFiles>
             <file name="vendor/simplesamlphp/simplesamlphp/modules/core/src/Auth/UserPassBase.php" />
             <directory name="tests/config" />
+            <directory name="tests/docker" />
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>

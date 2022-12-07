@@ -1,0 +1,25 @@
+{% set pagetitle = 'Login Loop Detected'|trans %}
+
+{% extends "base.twig" %}
+
+{% block content %}
+
+
+<h1>{{ "App Loop Header" | trans }}</h1>
+
+
+
+
+
+        <form id="loop_acknowledge" action="{{ moduleURL('ratelimit/loop_detection') }}">
+
+        <p>{{  'App Loop Message' |trans({'%APPNAME%': appName}) }} </p>
+        <input type="hidden" name="StateId" value="{{ stateId }}">
+
+{#       Add a 'If reporting this issue' message that includes tractId, timestamp and user IP #}
+
+    <input type="submit" name="continue" id="contbutton" value="{{ 'Retry Login Button'|trans }}" />
+
+</form>
+
+{% endblock content %}

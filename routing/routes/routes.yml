@@ -1,0 +1,3 @@
+ratelimit-loopDetection:
+  path:       /loop_detection
+  defaults:   { _controller: 'SimpleSAML\Module\ratelimit\Controller\RateLimit::loopDetection' }
