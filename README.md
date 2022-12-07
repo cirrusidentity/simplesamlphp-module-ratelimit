@@ -11,6 +11,12 @@
       - [Standalone delegate/SSP 2 style configuration](#standalone-delegatessp-2-style-configuration)
       - [Embedded delegate/SSP 1.x style configuration](#embedded-delegatessp-1x-style-configuration)
   - [Blocking behavior](#blocking-behavior)
+- [Login Loop Detection](#login-loop-detection)
+  - [Configuration](#configuration-1)
+- [Exploring with Docker](#exploring-with-docker)
+  - [Things to try](#things-to-try)
+    - [Blocking logins](#blocking-logins)
+    - [Loop Detection](#loop-detection)
 - [Development](#development)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -20,6 +26,9 @@
 This module provides functionality to ratelimit aspects of SSP
 
 # Installation
+
+* SSP 2: Use v2  (currently at v2.0.0-alpha.1)
+* SSP 1: Use v1  (currently at 1.10)
 
     composer require cirrusidentity/simplesamlphp-module-ratelimit
 
