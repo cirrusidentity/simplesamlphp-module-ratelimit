@@ -25,5 +25,7 @@ $config = [
 
     'secretsalt' =>  'donttellanyone',
     //'secretsalt' =>  '!',
-    'auth.adminpassword' => 'secret'
+    'auth.adminpassword' => 'secret',
+    'tempdir' => sys_get_temp_dir(),
+    'loggingdir'  => sys_get_temp_dir(),
 ];

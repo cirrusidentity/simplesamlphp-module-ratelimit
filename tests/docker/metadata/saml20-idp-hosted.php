@@ -6,7 +6,7 @@
  * See: https://simplesamlphp.org/docs/stable/simplesamlphp-reference-idp-hosted
  */
 
-$metadata['__DYNAMIC:1__'] = [
+$metadata['https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/saml2/idp/metadata.php'] = [
     /*
      * The hostname of the server (VHOST) that will use this SAML entity.
      *

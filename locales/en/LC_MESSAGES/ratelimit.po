@@ -1,0 +1,10 @@
+
+msgid "App Loop Header"
+msgstr "Issue sending you to the application"
+
+msgid "App Loop Message"
+msgstr "The application you are trying to access seems to be having problems."
+"The application ( %APPNAME% ) is not accepting your login and keeps requesting that you login again."
+
+msgid "Retry Login Button"
+msgstr "Retry Login"

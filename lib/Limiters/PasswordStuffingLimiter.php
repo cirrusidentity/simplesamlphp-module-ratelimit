@@ -4,6 +4,7 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
 use SimpleSAML\Utils\Config;
 
 /**
@@ -36,12 +37,16 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
     protected function generateSecureKeyFromPassword(string $password): string
     {
         $configUtils = new Config();
-        $salt = $this->determineWindowExpiration(time()) . $configUtils->getSecretSalt();
+        $configSalt = $configUtils->getSecretSalt();
+        if (strlen($configSalt) < 12) {
+            Logger::warning('ratelimit: secretsalt needs to be at least 12 characters');
+        }
+        $salt = $this->determineWindowExpiration(time()) . $configSalt;
 
         // Configure salt to use bcrypt. bcrypt supports salt up to 22 characters
         $cryptSalt = sprintf('$2y$%02d$', $this->cost) . substr($salt, 0, 22);
 
-        // Generate the bcrypt hash
+        // Generate the bcrypt hash. We opt not to use password_hash since we want to control the salt.
         $hash = crypt($password, $cryptSalt);
 
         /**
@@ -49,7 +54,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
          * the salt on failure.'. Failure reasons can include a salt with special characters or a small salt.
          */
         if (strlen($hash) < 13) {
-            throw new \RuntimeException('Unable to generate password hash key');
+            throw new \RuntimeException('Unable to generate password hash key.');
         }
 
 

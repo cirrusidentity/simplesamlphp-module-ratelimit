@@ -192,13 +192,40 @@ docker run -d --name ssp-ratelimit \
   --mount type=bind,source="$(pwd)/tests/docker/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/cert/",target=/var/simplesamlphp/cert/,readonly \
+  --mount type=bind,source="$(pwd)/tests/docker/www/looping-login.php",target=/var/simplesamlphp/www/looping-login.php,readonly \
    -p 443:443 cirrusid/simplesamlphp:v2.0.0-rc2.20221109T222122
 ```
 
 Then log in as `admin:secret` to https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/core/frontpage_welcome.php
 to confirm things work.
 
-You can
+## Things to try
+
+### Blocking logins
+
+The [example-userpass](https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test/example-userpass)
+authsource is configured with a low number of attempts for logins. Try logging in 3 or 4 times with the same username and wrong password and
+you should see log lines like
+
+    [Tue Dec 06 22:04:23.114923 2022] [php:notice] [pid 58] [client 172.18.0.1:59924] %date{M j H:i:s} simplesamlphp NOTICE STAT [c854ab328b] User 'testuser' login attempt blocked by SimpleSAML\\Module\\ratelimit\\Limiters\\UsernameLimiter
+
+If you try varying usernames and the same password (a password stuffing attack) then after a few attempts you should see
+
+    User 'pass2' login attempt blocked by SimpleSAML\\Module\\ratelimit\\Limiters\\PasswordStuffingLimiter
+
+### Loop Detection
+
+Visiting the [looping-login page](https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/looping-login.php)
+will issues a request as an SP to login with a local IdP and print out the attributes. User `member`, password `memberpass`.
+If you add a `loop` query parameter
+you can mimic a misbehaving SP that continuously sends a user to the IdP to login. The IdP is configured (see `saml20-idp-hosted.php`)
+with loop detection and will display an error page after too many loops.
+
+
+```
+
+```
+
 # Development
 
 Run `phpcs` to check code style

@@ -1,5 +1,4 @@
 <?php
-
 namespace SimpleSAML\Module\ratelimit\Controller;
 
 use SimpleSAML\Auth\ProcessingChain;
@@ -26,8 +25,8 @@ class RateLimit
      *
      * It initializes the global configuration and session for the controllers implemented here.
      *
-     * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
-     * @param Session $session The session to use by the controllers.
+     * @param \SimpleSAML\Configuration $config The configuration to use.
+     * @param \SimpleSAML\Session $session The current user session.
      *
      * @throws \Exception
      */
