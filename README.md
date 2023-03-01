@@ -201,8 +201,8 @@ docker run -d --name ssp-ratelimit \
   --mount type=bind,source="$(pwd)/tests/docker/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/cert/",target=/var/simplesamlphp/cert/,readonly \
-  --mount type=bind,source="$(pwd)/tests/docker/www/looping-login.php",target=/var/simplesamlphp/www/looping-login.php,readonly \
-   -p 443:443 cirrusid/simplesamlphp:v2.0.0-rc2.20221109T222122
+  --mount type=bind,source="$(pwd)/tests/docker/public/looping-login.php",target=/var/simplesamlphp/public/looping-login.php,readonly \
+   -p 443:443 cirrusid/simplesamlphp:v2.0.0
 ```
 
 Then log in as `admin:secret` to https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/core/frontpage_welcome.php
