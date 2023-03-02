@@ -53,7 +53,7 @@ class RateLimitUserPassTest extends TestCase
         $info = [
           'AuthId' => 'admin'
         ];
-        /** @var string|null $storeType needed until a release includes simplesamlphp/simplesamlphp/pull/1722 */
+
         $storeType = Configuration::getInstance()->getOptionalString('store.type', null);
         $this->assertNotNull($storeType, 'store.type must be configured');
         $store = StoreFactory::getInstance($storeType);
