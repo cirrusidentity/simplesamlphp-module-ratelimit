@@ -102,7 +102,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         ]);
         $password = 'p!% *';
 
-        $this->expectErrorMessage('Unable to generate password hash key');
+        $this->expectExceptionMessage('Unable to generate password hash key');
         $limiter->getRateLimitKey('u1', $password);
     }
 
