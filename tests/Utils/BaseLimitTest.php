@@ -1,12 +1,16 @@
 <?php
 
-namespace SimpleSAML\Test\Module\ratelimit\Limiters;
+declare(strict_types=1);
 
-use CirrusIdentity\SSP\Test\InMemoryStore;
+namespace SimpleSAML\Test\Module\ratelimit\Utils;
+
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
 use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\TestUtils\InMemoryStore;
+
+use function usleep;
 
 abstract class BaseLimitTest extends TestCase
 {

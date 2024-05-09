@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
-use SimpleSAML\Store\StoreFactory;
-use SimpleSAML\Store\StoreInterface;
+use SimpleSAML\Store\{StoreFactory, StoreInterface};
 use SimpleSAML\Utils\Time;
+
+use function ceil;
+use function intval;
 
 abstract class UserPassBaseLimiter implements UserPassLimiter
 {
@@ -110,7 +114,7 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
         $config = Configuration::getInstance();
         $storeType = $config->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
-        assert($store !== false, "Store must be configured");
+        Assert::notFalse($store, "Store must be configured");
         return $store;
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\ratelimit\Controller;
 
 use SimpleSAML\Auth\ProcessingChain;

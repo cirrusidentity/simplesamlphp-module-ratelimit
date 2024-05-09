@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
+use PHPUnit\Framework\Attributes\{CoversClass, DataProvider};
 use SimpleSAML\Configuration;
-use SimpleSAML\Module\ratelimit\Limiters\IpLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
+use SimpleSAML\Module\ratelimit\Limiters\{IpLimiter, UserPassBaseLimiter};
+use SimpleSAML\Test\Module\ratelimit\Utils\BaseLimitTest;
 
+#[CoversClass(IpLimiter::class)]
 class IpLimiterTest extends BaseLimitTest
 {
     protected function setUp(): void
@@ -19,10 +23,10 @@ class IpLimiterTest extends BaseLimitTest
     }
 
     /**
-     * @dataProvider ipWhitelistProvider
      * @param string $ip The user's ip address
      * @param bool $ignoreExpected If this IP should be ignored
      */
+    #[DataProvider('ipWhitelistProvider')]
     public function testIpWhitelist(string $ip, bool $ignoreExpected): void
     {
         $config = [
@@ -40,7 +44,7 @@ class IpLimiterTest extends BaseLimitTest
         $this->assertEquals($ignoreExpected ? 'continue' : 'block', $limiter->allow('u', 'p'));
     }
 
-    public function ipWhitelistProvider(): array
+    public static function ipWhitelistProvider(): array
     {
         return [
             ['12.3.7.12', false],

@@ -1,22 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
+use Exception;
 use ReflectionClass;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth\Source;
-use SimpleSAML\Configuration;
+use SimpleSAML\{Configuration, Logger, Module};
 use SimpleSAML\Error\Error;
-use SimpleSAML\Logger;
-use SimpleSAML\Module;
 use SimpleSAML\Module\core\Auth\UserPassBase;
-use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\IpLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
-use SimpleSAML\Store\StoreFactory;
-use SimpleSAML\Store\StoreInterface;
+use SimpleSAML\Module\ratelimit\Limiters\{
+    DeviceCookieLimiter,
+    IpLimiter,
+    PasswordStuffingLimiter,
+    UsernameLimiter,
+    UserPassLimiter,
+};
+use SimpleSAML\Store\{StoreFactory, StoreInterface};
+
+use function get_class;
+use function is_string;
+use function microtime;
+use function sprintf;
+use function var_export;
 
 /**
  * Auth source that rate limits user and password attempts
@@ -96,7 +104,7 @@ class RateLimitUserPass extends UserPassBase
             /** @var UserPassBase */
             $authInstance = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegate]);
         } else {
-            throw new \Exception('Invalid configuration for delegate. Must be string or array');
+            throw new Exception('Invalid configuration for delegate. Must be string or array');
         }
         Assert::isInstanceOf($authInstance, UserPassBase::class);
         return $authInstance;
@@ -188,16 +196,20 @@ class RateLimitUserPass extends UserPassBase
         foreach ($this->rateLimiters as $limiter) {
             try {
                 $result = $limiter->allow($username, $password);
-            } catch (\Exception $e) {
-                Logger::warning('Limiter error in \'allow\' of ' . get_class($limiter) . ' Error ' . $e->getMessage());
+            } catch (Exception $e) {
+                Logger::warning(sprintf(
+                    'Limiter error in \'allow\' of %s; Error %s',
+                    get_class($limiter),
+                    $e->getMessage(),
+                ));
                 continue;
             }
             switch ($result) {
                 case 'allow':
-                    Logger::debug('User \'' . $username . '\' login attempt allowed by ' . get_class($limiter));
+                    Logger::debug(sprintf('User \'%s\' login attempt allowed by %s', $username, get_class($limiter)));
                     return true;
                 case 'block':
-                    Logger::stats('User \'' . $username . '\' login attempt blocked by ' . get_class($limiter));
+                    Logger::stats(sprintf('User \'%s\' login attempt blocked by %s', $username, get_class($limiter)));
                     return false;
                 case 'continue':
                     continue 2;
@@ -220,10 +232,12 @@ class RateLimitUserPass extends UserPassBase
         foreach ($this->rateLimiters as $limiter) {
             try {
                 $limiter->postFailure($username, $password);
-            } catch (\Exception $e) {
-                Logger::warning(
-                    'Limiter error in \'postFailure\' of ' . get_class($limiter) . ' Error ' . $e->getMessage()
-                );
+            } catch (Exception $e) {
+                Logger::warning(sprintf(
+                    'Limiter error in \'postFailure\' of %s; Error %s',
+                    get_class($limiter),
+                    $e->getMessage(),
+                ));
                 continue;
             }
         }
@@ -240,10 +254,12 @@ class RateLimitUserPass extends UserPassBase
         foreach ($this->rateLimiters as $limiter) {
             try {
                 $limiter->postSuccess($username, $password);
-            } catch (\Exception $e) {
-                Logger::warning(
-                    'Limiter error in \'postSuccess\' of ' . get_class($limiter) . ' Error ' . $e->getMessage()
-                );
+            } catch (Exception $e) {
+                Logger::warning(sprintf(
+                    'Limiter error in \'postSuccess\' of %s; Error %s',
+                    get_class($limiter),
+                    $e->getMessage(),
+                ));
                 continue;
             }
         }

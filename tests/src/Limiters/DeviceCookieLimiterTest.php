@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
-use CirrusIdentity\SSP\Test\InMemoryStore;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use SimpleSAML\Configuration;
+use SimpleSAML\{Configuration, Utils};
 use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\TestUtils\InMemoryStore;
 
+#[CoversClass(DeviceCookieLimiter::class)]
 class DeviceCookieLimiterTest extends TestCase
 {
     /**
@@ -25,7 +28,7 @@ class DeviceCookieLimiterTest extends TestCase
     {
 
         // Stub the setCookie method
-        $this->mockHttp = $this->createMock(HTTP::class);
+        $this->mockHttp = $this->createMock(Utils\HTTP::class);
         $this->mockHttp->method('setCookie')
             ->with('deviceCookie', $this->callback(
                 function (?string $cookieValue) {
@@ -96,7 +99,6 @@ class DeviceCookieLimiterTest extends TestCase
         $limiter->postSuccess('me', 'pass');
         $deviceCookie = $this->getDeviceCookieFromMock();
         $_COOKIE['deviceCookie'] = $deviceCookie;
-
 
         $this->assertEquals(
             'allow',
