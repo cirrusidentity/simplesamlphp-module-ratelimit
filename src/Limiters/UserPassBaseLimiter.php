@@ -14,8 +14,13 @@ use function intval;
 
 abstract class UserPassBaseLimiter implements UserPassLimiter
 {
+    /** @psalm-suppress MissingClassConstType */
     protected const PREAUTH_ALLOW = 'allow';
+
+    /** @psalm-suppress MissingClassConstType */
     protected const PREAUTH_BLOCK = 'block';
+
+    /** @psalm-suppress MissingClassConstType */
     protected const PREAUTH_CONTINUE = 'continue';
 
     /**
@@ -115,6 +120,7 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
         $storeType = $config->getOptionalString('store.type', 'phpsession');
         $store = StoreFactory::getInstance($storeType);
         Assert::notFalse($store, "Store must be configured");
+        /** @psalm-var \SimpleSAML\Store\StoreInterface $store */
         return $store;
     }
 

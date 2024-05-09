@@ -61,6 +61,7 @@ class LoopDetectionTest extends TestCase
         //cli/phpunit sessions don't have session ids, but SessionHandlerStore needs a session id to save dirty state
         $class = new ReflectionClass(Session::class);
         $prop = $class->getProperty('sessionId');
+        /** @psalm-suppress UnusedMethodCall */
         $prop->setAccessible(true);
         $prop->setValue($session, 'mockedSessionId');
         $this->assertEquals('mockedSessionId', $session->getSessionId());

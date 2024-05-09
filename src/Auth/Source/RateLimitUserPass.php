@@ -33,15 +33,16 @@ use function var_export;
 class RateLimitUserPass extends UserPassBase
 {
     /**
-     * @var UserPassBase The auth source to handle the login
+     * @var \SimpleSAML\Module\core\Auth\UserPassBase The auth source to handle the login
      */
     private UserPassBase $delegate;
 
     /**
-     * @var UserPassLimiter[]
+     * @var \SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter[]
      */
     private array $rateLimiters = [];
 
+    /** @psalm-suppress MissingClassConstType */
     private const DEFAULT_CONFIG = [
         0 => [
             'device',
@@ -89,19 +90,20 @@ class RateLimitUserPass extends UserPassBase
 
     /**
      * @param mixed $delegate
-     * @return UserPassBase
+     * @return \SimpleSAML\Module\core\Auth\UserPassBase
      */
     private function resolveDelegateConfig($delegate): UserPassBase
     {
         if (is_string($delegate)) {
             // delegate to another named authsource
-            /** @var UserPassBase */
+            /** @var \SimpleSAML\Module\core\Auth\UserPassBase */
             $authInstance = Source::getById($delegate, UserPassBase::class);
         } elseif (is_array($delegate)) {
             $class = new ReflectionClass(Source::class);
             $method = $class->getMethod('parseAuthSource');
+            /** @psalm-suppress UnusedMethodCall */
             $method->setAccessible(true);
-            /** @var UserPassBase */
+            /** @var \SimpleSAML\Module\core\Auth\UserPassBase */
             $authInstance = $method->invokeArgs(null, [$this->getAuthId() . '-delegate', $delegate]);
         } else {
             throw new Exception('Invalid configuration for delegate. Must be string or array');
