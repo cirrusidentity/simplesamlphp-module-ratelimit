@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
+
 /**
  * Allow limiting of user password authentications
  * @package SimpleSAML\Module\ratelimit
@@ -14,9 +16,9 @@ interface UserPassLimiter
      * Called prior to verifying the credentials to determine if the attempt is allowed.
      * @param string $username The username to check
      * @param string $password The password to check
-     * @return string allow|block|continue
+     * @return \SimpleSAML\Module\ratelimit\PreAuthStatusEnum
      */
-    public function allow(string $username, string $password): string;
+    public function allow(string $username, string $password): PreAuthStatusEnum;
 
     /**
      * Called after a successful authentication

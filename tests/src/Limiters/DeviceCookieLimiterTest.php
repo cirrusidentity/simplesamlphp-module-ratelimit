@@ -9,6 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\{Configuration, Utils};
 use SimpleSAML\Module\ratelimit\Limiters\DeviceCookieLimiter;
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\TestUtils\InMemoryStore;
 
 #[CoversClass(DeviceCookieLimiter::class)]
@@ -93,7 +94,7 @@ class DeviceCookieLimiterTest extends TestCase
         $limiter = $this->getLimiter([]);
 
         //expect: auth with out device cookie is continue
-        $this->assertEquals('continue', $limiter->allow('me', 'a'));
+        $this->assertEquals(PreAuthStatusEnum::CONTINUE, $limiter->allow('me', 'a'));
 
         //given: an existing cookie in the stroe
         $limiter->postSuccess('me', 'pass');
@@ -101,19 +102,19 @@ class DeviceCookieLimiterTest extends TestCase
         $_COOKIE['deviceCookie'] = $deviceCookie;
 
         $this->assertEquals(
-            'allow',
+            PreAuthStatusEnum::ALLOW,
             $limiter->allow('me', 'a'),
             'User matches device cookie, so is allowed'
         );
 
         $this->assertEquals(
-            'continue',
+            PreAuthStatusEnum::CONTINUE,
             $limiter->allow('typoe', 'a'),
             'User does not match device cookie, so go to other rules'
         );
         $_COOKIE['deviceCookie'] = 'not-in-store';
         $this->assertEquals(
-            'continue',
+            PreAuthStatusEnum::CONTINUE,
             $limiter->allow('me', 'a'),
             'Device cookie not in store means go to other rules'
         );
@@ -145,7 +146,7 @@ class DeviceCookieLimiterTest extends TestCase
         // Expect: failure for use increments count
         $this->assertEquals(1, $limiter->postFailure('u', 'p'));
         //sanity check that allow method still returns allow
-        $this->assertEquals('allow', $limiter->allow('u', 'p'));
+        $this->assertEquals(PreAuthStatusEnum::ALLOW, $limiter->allow('u', 'p'));
 
         $key = $limiter->getRateLimitKey('u', 'p');
         /** @var array{count: int, user: string}|null $result */
@@ -157,7 +158,7 @@ class DeviceCookieLimiterTest extends TestCase
         $this->assertEquals(2, $limiter->postFailure('u', 'p'));
         $this->assertNull($store->get('array', 'ratelimit-' . $key));
         //sanity check that allow method not returns continue
-        $this->assertEquals('continue', $limiter->allow('u', 'p'));
+        $this->assertEquals(PreAuthStatusEnum::CONTINUE, $limiter->allow('u', 'p'));
     }
 
     private function getDeviceCookieFromMock(): ?string

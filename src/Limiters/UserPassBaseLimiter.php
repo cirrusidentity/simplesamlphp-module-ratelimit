@@ -6,6 +6,7 @@ namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\Store\{StoreFactory, StoreInterface};
 use SimpleSAML\Utils\Time;
 
@@ -14,15 +15,6 @@ use function intval;
 
 abstract class UserPassBaseLimiter implements UserPassLimiter
 {
-    /** @psalm-suppress MissingClassConstType */
-    protected const PREAUTH_ALLOW = 'allow';
-
-    /** @psalm-suppress MissingClassConstType */
-    protected const PREAUTH_BLOCK = 'block';
-
-    /** @psalm-suppress MissingClassConstType */
-    protected const PREAUTH_CONTINUE = 'continue';
-
     /**
      * @var int $limit The limit of attempts
      */
@@ -54,16 +46,16 @@ abstract class UserPassBaseLimiter implements UserPassLimiter
      * Called prior to verifying the credentials to determine if the attempt is allowed.
      * @param string $username The username to check
      * @param string $password The password to check
-     * @return string allow|block|continue
+     * @return \SimpleSAML\Module\ratelimit\PreAuthStatusEnum
      */
-    public function allow(string $username, string $password): string
+    public function allow(string $username, string $password): PreAuthStatusEnum
     {
         $key = $this->getRateLimitKey($username, $password);
         $count = $this->getCurrentCount($key);
         if ($count >= $this->limit) {
-            return UserPassBaseLimiter::PREAUTH_BLOCK;
+            return PreAuthStatusEnum::BLOCK;
         }
-        return UserPassBaseLimiter::PREAUTH_CONTINUE;
+        return PreAuthStatusEnum::CONTINUE;
     }
 
     /**

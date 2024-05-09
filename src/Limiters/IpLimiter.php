@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\{Configuration, Logger};
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use Symfony\Component\HttpFoundation\{IpUtils, Request};
 
 /**
@@ -32,10 +33,10 @@ class IpLimiter extends UserPassBaseLimiter
         $this->clientIpAddress = $ip;
     }
 
-    public function allow(string $username, string $password): string
+    public function allow(string $username, string $password): PreAuthStatusEnum
     {
         if ($this->isIpWhiteListed($this->clientIpAddress)) {
-            return UserPassBaseLimiter::PREAUTH_CONTINUE;
+            return PreAuthStatusEnum::CONTINUE;
         }
         return parent::allow($username, $password);
     }

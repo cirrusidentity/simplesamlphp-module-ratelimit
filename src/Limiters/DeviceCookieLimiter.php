@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
 use SimpleSAML\{Configuration, Logger};
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\Utils\HTTP;
 
 use function sprintf;
@@ -31,18 +32,18 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         return "device-" . $this->checkForDeviceCookie();
     }
 
-    public function allow(string $username, string $password): string
+    public function allow(string $username, string $password): PreAuthStatusEnum
     {
         if (!$this->hasDeviceCookieSet()) {
-            return UserPassBaseLimiter::PREAUTH_CONTINUE;
+            return PreAuthStatusEnum::CONTINUE;
         }
         $key = $this->getRateLimitKey($username, $password);
         /** @var array|null $ret */
         $ret = $this->getStore()->get('array', "ratelimit-$key");
         if ($ret === null) {
-            return UserPassBaseLimiter::PREAUTH_CONTINUE;
+            return PreAuthStatusEnum::CONTINUE;
         }
-        return $ret['user'] === $username ? UserPassBaseLimiter::PREAUTH_ALLOW : UserPassBaseLimiter::PREAUTH_CONTINUE;
+        return $ret['user'] === $username ? PreAuthStatusEnum::ALLOW : PreAuthStatusEnum::CONTINUE;
     }
 
     public function postFailure(string $username, string $password): int

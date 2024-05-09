@@ -18,6 +18,7 @@ use SimpleSAML\Module\ratelimit\Limiters\{
     UsernameLimiter,
     UserPassLimiter,
 };
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\Store\{StoreFactory, StoreInterface};
 
 use function get_class;
@@ -42,7 +43,10 @@ class RateLimitUserPass extends UserPassBase
      */
     private array $rateLimiters = [];
 
-    /** @psalm-suppress MissingClassConstType */
+    /**
+     * @var array
+     * psalm-suppress MissingClassConstType
+     */
     private const DEFAULT_CONFIG = [
         0 => [
             'device',
@@ -207,16 +211,14 @@ class RateLimitUserPass extends UserPassBase
                 continue;
             }
             switch ($result) {
-                case 'allow':
+                case PreAuthStatusEnum::ALLOW:
                     Logger::debug(sprintf('User \'%s\' login attempt allowed by %s', $username, get_class($limiter)));
                     return true;
-                case 'block':
+                case PreAuthStatusEnum::BLOCK:
                     Logger::stats(sprintf('User \'%s\' login attempt blocked by %s', $username, get_class($limiter)));
                     return false;
-                case 'continue':
+                case PreAuthStatusEnum::CONTINUE:
                     continue 2;
-                default:
-                    Logger::warning("Unrecognized ratelimit allow() value '$result'");
             }
         }
 

@@ -7,6 +7,7 @@ namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 use PHPUnit\Framework\Attributes\{CoversClass, DataProvider};
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\{IpLimiter, UserPassBaseLimiter};
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\Test\Module\ratelimit\Utils\BaseLimitTest;
 
 #[CoversClass(IpLimiter::class)]
@@ -41,7 +42,7 @@ class IpLimiterTest extends BaseLimitTest
 
         $limiter = $this->getLimiter($config);
         $this->assertEquals($ignoreExpected ? 0 : 1, $limiter->postFailure('u', 'p'));
-        $this->assertEquals($ignoreExpected ? 'continue' : 'block', $limiter->allow('u', 'p'));
+        $this->assertEquals($ignoreExpected ? PreAuthStatusEnum::CONTINUE : PreAuthStatusEnum::BLOCK, $limiter->allow('u', 'p'));
     }
 
     public static function ipWhitelistProvider(): array
