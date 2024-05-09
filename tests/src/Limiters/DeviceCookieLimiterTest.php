@@ -15,7 +15,7 @@ use SimpleSAML\TestUtils\InMemoryStore;
 class DeviceCookieLimiterTest extends TestCase
 {
     /**
-     * @var MockObject|HTTP
+     * @var \PHPUnit\Framework\MockObject\MockObject|\SimpleSAML\Utils\HTTP
      */
     private $mockHttp;
 
