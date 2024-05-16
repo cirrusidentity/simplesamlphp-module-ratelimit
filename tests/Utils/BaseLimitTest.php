@@ -1,12 +1,18 @@
 <?php
 
-namespace SimpleSAML\Test\Module\ratelimit\Limiters;
+declare(strict_types=1);
 
-use CirrusIdentity\SSP\Test\InMemoryStore;
+namespace SimpleSAML\Test\Module\ratelimit\Utils;
+
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\TestUtils\InMemoryStore;
+
+use function sleep;
 
 abstract class BaseLimitTest extends TestCase
 {
@@ -23,6 +29,49 @@ abstract class BaseLimitTest extends TestCase
     }
 
     abstract protected function getLimiter(array $config): UserPassBaseLimiter;
+
+    /**
+     * If the current rate limit window has less than $miTime seconds left, sleep till the
+     * next window.
+     * @param UserPassBaseLimiter $limiter
+     * @param int $minTime minimum seconds left in the window
+     * @return void
+     */
+    public function waitTillWindowHasAtLeastMinTime(UserPassBaseLimiter $limiter, int $minTime): void
+    {
+        $time = time();
+        $startingWindow = $limiter->determineWindowExpiration($time);
+        $windowTimeLeft = $startingWindow - $time;
+        $this->assertGreaterThanOrEqual(0, $windowTimeLeft);
+        if ($windowTimeLeft < $minTime) {
+            echo "Waiting for new wait limit window " . $windowTimeLeft;
+            /** @psalm-suppress InvalidArgument */
+            sleep($windowTimeLeft);
+            $this->assertNotEquals(
+                $startingWindow,
+                $limiter->determineWindowExpiration(time()),
+                "Unable to start new window"
+            );
+        } else {
+            echo "$windowTimeLeft seconds left in window $startingWindow";
+        }
+    }
+
+    /**
+     * Some tests require sleeping until the next time window starts.
+     * @param int $currentWindow The current time window
+     * @param UserPassBaseLimiter $limiter
+     * @return void
+     */
+    public function sleepTillNextWindow(int $currentWindow, UserPassBaseLimiter $limiter): void
+    {
+        while ($currentWindow == $limiter->determineWindowExpiration(time())) {
+            sleep(1);
+        }
+        // Pending discussion from https://github.com/simplesamlphp/simplesamlphp-test-framework/issues/5
+        // Sleep an extra second since inMemoryStore considers data expired 1 second after expiration date
+        sleep(1);
+    }
 
     /**
      *  Test window calculation
@@ -59,22 +108,31 @@ abstract class BaseLimitTest extends TestCase
         $limiter = $this->getLimiter($config);
         $username = 'Homer';
         $password = 'Beer';
+        $this->waitTillWindowHasAtLeastMinTime($limiter, 2);
+        $startingWindow = $limiter->determineWindowExpiration(time());
         for ($i = 1; $i <= 3; $i++) {
             // First 3 attempts should not be blocked
-            $this->assertEquals('continue', $limiter->allow($username, $password), "Attempt $i");
+            $this->assertEquals(PreAuthStatusEnum::CONTINUE, $limiter->allow($username, $password), "Attempt $i");
+            $currentWindow = $limiter->determineWindowExpiration(time());
+            $this->assertEquals($startingWindow, $currentWindow, 'Cache window changed during test');
             $this->assertEquals($i, $limiter->postFailure($username, $password));
             $this->assertEquals($i, $this->getStoreValueFor($limiter->getRateLimitKey($username, $password)));
         }
         // After 3 failed attempts it should be blocked
-        $this->assertEquals('block', $limiter->allow($username, $password));
+        $this->assertEquals(PreAuthStatusEnum::BLOCK, $limiter->allow($username, $password));
 
         // Sleep until the next window, and counter should be reset
-        usleep(4020000);
+        $this->sleepTillNextWindow($startingWindow, $limiter);
+        $this->assertNotEquals(
+            $startingWindow,
+            $limiter->determineWindowExpiration(time()),
+            'Next cache window expected'
+        );
         $this->assertNull(
             $this->getStoreValueFor($limiter->getRateLimitKey($username, $password)),
             'Value not expected in store'
         );
-        $this->assertEquals('continue', $limiter->allow($username, $password));
+        $this->assertEquals(PreAuthStatusEnum::CONTINUE, $limiter->allow($username, $password));
     }
 
     /**

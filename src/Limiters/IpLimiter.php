@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
-use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
-use Symfony\Component\HttpFoundation\IpUtils;
-use Symfony\Component\HttpFoundation\Request;
+use SimpleSAML\{Configuration, Logger};
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
+use Symfony\Component\HttpFoundation\{IpUtils, Request};
 
 /**
  * Limit attempts by IP address
@@ -14,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 class IpLimiter extends UserPassBaseLimiter
 {
     /**
-     * @var array The IP addresses that we ignore the rate limiter for
+     * @var array<mixed> The IP addresses that we ignore the rate limiter for
      */
     private array $whitelist;
 
@@ -23,7 +24,6 @@ class IpLimiter extends UserPassBaseLimiter
     public function __construct(Configuration $config)
     {
         parent::__construct($config);
-        /** @var string[] whitelist */
         $this->whitelist = $config->getOptionalArray('whitelist', []);
         $ip = Request::createFromGlobals()->getClientIp();
         if ($ip == null) {
@@ -33,10 +33,10 @@ class IpLimiter extends UserPassBaseLimiter
         $this->clientIpAddress = $ip;
     }
 
-    public function allow(string $username, string $password): string
+    public function allow(string $username, string $password): PreAuthStatusEnum
     {
         if ($this->isIpWhiteListed($this->clientIpAddress)) {
-            return UserPassBaseLimiter::PREAUTH_CONTINUE;
+            return PreAuthStatusEnum::CONTINUE;
         }
         return parent::allow($username, $password);
     }

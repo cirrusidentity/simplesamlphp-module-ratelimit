@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Test\Module\ratelimit\Auth\Process;
 
-use CirrusIdentity\SSP\Test\Capture\RedirectException;
-use CirrusIdentity\SSP\Test\InMemoryStore;
-use CirrusIdentity\SSP\Test\MockHttp;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Module\core\Auth\UserPassBase;
 use SimpleSAML\Module\ratelimit\Auth\Process\LoopDetection;
-use SimpleSAML\Session;
-use SimpleSAML\TestUtils\ClearStateTestCase;
-use SimpleSAML\TestUtils\StateClearer;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\{Session, Utils};
+use SimpleSAML\TestUtils\{ClearStateTestCase, InMemoryStore, StateClearer};
+
+use function strtotime;
 
 class LoopDetectionTest extends TestCase
 {
@@ -61,6 +61,7 @@ class LoopDetectionTest extends TestCase
         //cli/phpunit sessions don't have session ids, but SessionHandlerStore needs a session id to save dirty state
         $class = new ReflectionClass(Session::class);
         $prop = $class->getProperty('sessionId');
+        /** @psalm-suppress UnusedMethodCall */
         $prop->setAccessible(true);
         $prop->setValue($session, 'mockedSessionId');
         $this->assertEquals('mockedSessionId', $session->getSessionId());
@@ -75,17 +76,16 @@ class LoopDetectionTest extends TestCase
         $expectedUrl = 'http://localhost/module.php/ratelimit/loop_detection';
 
         $emptyState = [];
-        $mockHttp = $this->createMock(HTTP::class);
+        $mockHttp = $this->createMock(Utils\HTTP::class);
         $mockHttp->method('redirectTrustedURL')
             ->with(
                 $expectedUrl,
                 $this->arrayHasKey('StateId')
             )
-            ->willThrowException(new \Exception('Redirect expected'));
+            ->willThrowException(new Exception('Redirect expected'));
 
         $source = new LoopDetection($config, null);
         $source->setHttp($mockHttp);
-
         $source->process($emptyState);
 
         $session->setData('ratelimit:loopDetection', 'Count', 11);

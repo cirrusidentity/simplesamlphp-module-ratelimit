@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use SimpleSAML\Configuration;
-use SimpleSAML\Module\ratelimit\Limiters\UsernameLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
+use SimpleSAML\Module\ratelimit\Limiters\{UsernameLimiter, UserPassBaseLimiter};
+use SimpleSAML\Test\Module\ratelimit\Utils\BaseLimitTest;
 
+#[CoversClass(UserNameLimiter::class)]
 class UsernameLimiterTest extends BaseLimitTest
 {
     /**

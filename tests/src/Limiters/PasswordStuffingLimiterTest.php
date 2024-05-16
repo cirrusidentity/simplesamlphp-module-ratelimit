@@ -1,12 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
-use CirrusIdentity\SSP\Test\InMemoryStore;
+use PHPUnit\Framework\Attributes\{CoversClass, DataProvider};
+use RuntimeException;
 use SimpleSAML\Configuration;
-use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
+use SimpleSAML\Module\ratelimit\Limiters\{PasswordStuffingLimiter, UserPassBaseLimiter};
+use SimpleSAML\TestUtils\InMemoryStore;
+use SimpleSAML\Test\Module\ratelimit\Utils\BaseLimitTest;
 
+#[CoversClass(PasswordStuffingLimiter::class)]
 class PasswordStuffingLimiterTest extends BaseLimitTest
 {
     protected function getLimiter(array $config): UserPassBaseLimiter
@@ -20,18 +25,20 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     public function testKeyVariesWithWindow(): void
     {
         $config = [
-          'window' => 'PT2S'
+          'window' => 'PT3S'
         ];
 
         $limiter = $this->getLimiter($config);
 
         $password = 'abcXYZ123';
-        //TODO: adjust time to be the start of a window
+        $this->waitTillWindowHasAtLeastMinTime($limiter, 1);
+        $startingWindow = $limiter->determineWindowExpiration(time());
         $result = $limiter->getRateLimitKey('efg', $password);
         $this->assertEquals($result, $limiter->getRateLimitKey('xyz', $password));
         $this->assertEquals($result, $limiter->getRateLimitKey('abc', $password));
 
-        sleep(3);
+        $this->sleepTillNextWindow($startingWindow, $limiter);
+        $this->waitTillWindowHasAtLeastMinTime($limiter, 1);
         // Next window should have different keys
         $newKey = $limiter->getRateLimitKey('efg', $password);
         $this->assertNotEquals($result, $newKey, 'Key should vary with window');
@@ -71,8 +78,8 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     }
 
     /**
-     * @dataProvider saltProvider
      */
+    #[DataProvider('saltProvider')]
     public function testVariousSalts(string $salt): void
     {
         $this->setConfigBasedOnSalt($salt);
@@ -81,7 +88,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $this->assertGreaterThan(strlen('password-'), strlen($key1));
     }
 
-    public function saltProvider(): array
+    public static function saltProvider(): array
     {
         return [
             // 12 seems like minimum salt lenght
@@ -92,8 +99,8 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     }
 
     /**
-     * @dataProvider badSaltProvider
      */
+    #[DataProvider('badSaltProvider')]
     public function testBadSaltsDoesntResultInBlankKey(string $salt): void
     {
         $this->setConfigBasedOnSalt($salt);
@@ -102,17 +109,18 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         ]);
         $password = 'p!% *';
 
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unable to generate password hash key');
         $limiter->getRateLimitKey('u1', $password);
     }
 
-    public function badSaltProvider(): array
+    public static function badSaltProvider(): array
     {
         return [
             // too short
             ['a'],
             // special characters
-            ['! /*%√'],
+            ['! /*$√'],
         ];
     }
 }

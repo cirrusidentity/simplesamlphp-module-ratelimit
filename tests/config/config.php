@@ -17,7 +17,7 @@ $config = [
         'ratelimit' => true,
     ],
 
-    'store.type' => '\CirrusIdentity\SSP\Test\InMemoryStore',
+    'store.type' => '\SimpleSAML\TestUtils\InMemoryStore',
 
     'debug' => true,
     'logging.level' => Logger::DEBUG,

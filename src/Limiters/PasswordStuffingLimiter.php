@@ -1,11 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
+use RuntimeException;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
+use SimpleSAML\{Configuration, Logger};
 use SimpleSAML\Utils\Config;
+
+use function crypt;
+use function sprintf;
+use function strlen;
+use function substr;
+use function time;
 
 /**
  * Prevent password stuffing attacks by blocking repeated attempts on an incorrect password.
@@ -54,7 +62,7 @@ class PasswordStuffingLimiter extends UserPassBaseLimiter
          * the salt on failure.'. Failure reasons can include a salt with special characters or a small salt.
          */
         if (strlen($hash) < 13) {
-            throw new \RuntimeException('Unable to generate password hash key');
+            throw new RuntimeException('Unable to generate password hash key');
         }
 
 
