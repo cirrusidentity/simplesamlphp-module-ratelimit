@@ -9,7 +9,6 @@ use SimpleSAML\Assert\Assert;
 use SimpleSAML\{Configuration, Logger};
 use SimpleSAML\Utils\Config;
 
-use function base64_decode;
 use function crypt;
 use function sprintf;
 use function strlen;
