@@ -25,7 +25,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     public function testKeyVariesWithWindow(): void
     {
         $config = [
-          'window' => 'PT2S'
+          'window' => 'PT3S'
         ];
 
         $limiter = $this->getLimiter($config);
@@ -38,6 +38,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $this->assertEquals($result, $limiter->getRateLimitKey('abc', $password));
 
         $this->sleepTillNextWindow($startingWindow, $limiter);
+        $this->waitTillWindowHasAtLeastMinTime($limiter, 1);
         // Next window should have different keys
         $newKey = $limiter->getRateLimitKey('efg', $password);
         $this->assertNotEquals($result, $newKey, 'Key should vary with window');
