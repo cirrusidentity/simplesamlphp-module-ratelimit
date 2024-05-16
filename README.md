@@ -23,11 +23,12 @@
 
 # Overview
 
-This module provides functionality to ratelimit aspects of SSP
+This module provides functionality to rate limit aspects of SSP
 
 # Installation
 
-* SSP 2: Use v2  (currently at v2.0.0-alpha.1)
+* SSP 2.2: Use v3  (currently at v3.0.0)
+* SSP 2.0 or 2.1: Use v2  (currently at v2.0.0-alpha.1)
 * SSP 1: Use v1  (currently at 1.10)
 
     composer require cirrusidentity/simplesamlphp-module-ratelimit
@@ -107,7 +108,9 @@ $config = [
                        '5.6.7.0/24',
                     ],
                ],
-          ]
+          ],
+     ]
+];
 ```
 
 #### Embedded delegate/SSP 1.x style configuration
@@ -156,7 +159,9 @@ $config = [
                        '5.6.7.0/24',
                     ],
                ],
-          ]
+          ],
+     ]
+ ];
 ```
 
 If no `ratelimit` block is defined then the `UsernameLimiter` and `DeviceCookieLimiter`
