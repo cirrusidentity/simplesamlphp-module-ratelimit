@@ -11,8 +11,6 @@ use SimpleSAML\Module\ratelimit\Limiters\{PasswordStuffingLimiter, UserPassBaseL
 use SimpleSAML\TestUtils\InMemoryStore;
 use SimpleSAML\Test\Module\ratelimit\Utils\BaseLimitTest;
 
-use function sleep;
-
 #[CoversClass(PasswordStuffingLimiter::class)]
 class PasswordStuffingLimiterTest extends BaseLimitTest
 {
@@ -27,18 +25,20 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     public function testKeyVariesWithWindow(): void
     {
         $config = [
-          'window' => 'PT2S'
+          'window' => 'PT3S'
         ];
 
         $limiter = $this->getLimiter($config);
 
         $password = 'abcXYZ123';
-        //TODO: adjust time to be the start of a window
+        $this->waitTillWindowHasAtLeastMinTime($limiter, 1);
+        $startingWindow = $limiter->determineWindowExpiration(time());
         $result = $limiter->getRateLimitKey('efg', $password);
         $this->assertEquals($result, $limiter->getRateLimitKey('xyz', $password));
         $this->assertEquals($result, $limiter->getRateLimitKey('abc', $password));
 
-        sleep(3);
+        $this->sleepTillNextWindow($startingWindow, $limiter);
+        $this->waitTillWindowHasAtLeastMinTime($limiter, 1);
         // Next window should have different keys
         $newKey = $limiter->getRateLimitKey('efg', $password);
         $this->assertNotEquals($result, $newKey, 'Key should vary with window');

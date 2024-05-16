@@ -42,7 +42,10 @@ class IpLimiterTest extends BaseLimitTest
 
         $limiter = $this->getLimiter($config);
         $this->assertEquals($ignoreExpected ? 0 : 1, $limiter->postFailure('u', 'p'));
-        $this->assertEquals($ignoreExpected ? PreAuthStatusEnum::CONTINUE : PreAuthStatusEnum::BLOCK, $limiter->allow('u', 'p'));
+        $this->assertEquals(
+            $ignoreExpected ? PreAuthStatusEnum::CONTINUE : PreAuthStatusEnum::BLOCK,
+            $limiter->allow('u', 'p')
+        );
     }
 
     public static function ipWhitelistProvider(): array
