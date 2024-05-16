@@ -1,17 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\ratelimit\Auth\Source;
 
-use CirrusIdentity\SSP\Test\InMemoryStore;
 use PHPUnit\Framework\TestCase;
-use SimpleSAML\Configuration;
-use SimpleSAML\Error;
+use SimpleSAML\{Configuration, Error};
 use SimpleSAML\Module\core\Auth\Source\AdminPassword;
-use SimpleSAML\Store\StoreFactory;
-use SimpleSAML\Store\StoreInterface;
+use SimpleSAML\Store\{StoreFactory, StoreInterface};
 use SimpleSAML\Test\Module\ratelimit\Limiters\ExceptionThrowingLimiter;
-use SimpleSAML\TestUtils\StateClearer;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\TestUtils\{InMemoryStore, StateClearer};
 
 class RateLimitUserPassTest extends TestCase
 {

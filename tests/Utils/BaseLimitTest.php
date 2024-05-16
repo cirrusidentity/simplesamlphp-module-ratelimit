@@ -1,12 +1,17 @@
 <?php
 
-namespace SimpleSAML\Test\Module\ratelimit\Limiters;
+declare(strict_types=1);
 
-use CirrusIdentity\SSP\Test\InMemoryStore;
+namespace SimpleSAML\Test\Module\ratelimit\Utils;
+
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\Store\StoreFactory;
+use SimpleSAML\TestUtils\InMemoryStore;
+
+use function usleep;
 
 abstract class BaseLimitTest extends TestCase
 {
@@ -61,12 +66,12 @@ abstract class BaseLimitTest extends TestCase
         $password = 'Beer';
         for ($i = 1; $i <= 3; $i++) {
             // First 3 attempts should not be blocked
-            $this->assertEquals('continue', $limiter->allow($username, $password), "Attempt $i");
+            $this->assertEquals(PreAuthStatusEnum::CONTINUE, $limiter->allow($username, $password), "Attempt $i");
             $this->assertEquals($i, $limiter->postFailure($username, $password));
             $this->assertEquals($i, $this->getStoreValueFor($limiter->getRateLimitKey($username, $password)));
         }
         // After 3 failed attempts it should be blocked
-        $this->assertEquals('block', $limiter->allow($username, $password));
+        $this->assertEquals(PreAuthStatusEnum::BLOCK, $limiter->allow($username, $password));
 
         // Sleep until the next window, and counter should be reset
         usleep(4020000);
@@ -74,7 +79,7 @@ abstract class BaseLimitTest extends TestCase
             $this->getStoreValueFor($limiter->getRateLimitKey($username, $password)),
             'Value not expected in store'
         );
-        $this->assertEquals('continue', $limiter->allow($username, $password));
+        $this->assertEquals(PreAuthStatusEnum::CONTINUE, $limiter->allow($username, $password));
     }
 
     /**

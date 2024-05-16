@@ -19,7 +19,9 @@
             <directory name="tests/docker" />
         </ignoreFiles>
     </projectFiles>
+
     <issueHandlers>
         <PropertyNotSetInConstructor errorLevel="info" />
+        <MissingClassConstType errorLevel="suppress" />
     </issueHandlers>
 </psalm>

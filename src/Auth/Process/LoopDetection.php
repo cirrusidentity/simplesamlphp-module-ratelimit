@@ -7,12 +7,13 @@ namespace SimpleSAML\Module\ratelimit\Auth\Process;
 use Exception;
 use SimpleSAML\Auth\ProcessingFilter;
 use SimpleSAML\Auth\State;
-use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
-use SimpleSAML\Module;
-use SimpleSAML\Session;
-use SimpleSAML\Utils;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\{Configuration, Logger, Module, Session, Utils};
+
+use function is_int;
+use function is_null;
+use function sprintf;
+use function time;
+use function var_export;
 
 /**
  * Give a warning to the user if we receive multiple requests in a short time.
@@ -37,7 +38,7 @@ class LoopDetection extends ProcessingFilter
      */
     private bool $logOnly;
 
-    private ?HTTP $http = null;
+    private ?Utils\HTTP $http = null;
 
     /**
      * Initialize this filter.
@@ -89,10 +90,11 @@ class LoopDetection extends ProcessingFilter
             $session->setData('ratelimit:loopDetection', 'Count', 0);
             return;
         }
+
         /** @var int $loopDetectionCount */
         $loopDetectionCount = $session->getData('ratelimit:loopDetection', 'Count');
         $loopDetectionCount++;
-        Logger::debug('LoopDetectionCount: ' . $loopDetectionCount);
+        Logger::debug(sprintf('LoopDetectionCount: %d', $loopDetectionCount));
 
         $session->setData('ratelimit:loopDetection', 'Count', $loopDetectionCount);
 
@@ -101,15 +103,21 @@ class LoopDetection extends ProcessingFilter
 
         if ($loopDetectionCount <= $this->loopsBeforeWarning) {
             if ($loopDetectionCount > 1) {
-                Logger::warning('LoopDetectionCount: ' . $loopDetectionCount .
-                                ' entityId: ' . var_export($entityId, true));
+                Logger::warning(sprintf(
+                    'LoopDetectionCount: %d entityId: %s',
+                    $loopDetectionCount,
+                    var_export($entityId, true),
+                ));
             }
             return;
         }
 
-        Logger::warning('LoopDetection: Only ' . $timeDelta .
-            ' seconds since last SSO for this user from the SP ' . var_export($entityId, true) .
-            ' LoopDetectionCount ' . $loopDetectionCount);
+        Logger::warning(sprintf(
+            'LoopDetection: Only %d seconds since last SSO for this user from the SP %s. LoopDetectionCount %d',
+            $timeDelta,
+            var_export($entityId, true),
+            $loopDetectionCount,
+        ));
 
         if (!$this->logOnly) {
             // Set the loop counter back to 0
@@ -123,20 +131,20 @@ class LoopDetection extends ProcessingFilter
 
     /**
      * Used to allow tests to override
-     * @return HTTP
+     * @return \SimpleSAML\Utils\HTTP
      */
-    public function getHttp(): HTTP
+    public function getHttp(): Utils\HTTP
     {
         if (!isset($this->http)) {
-            $this->http = new HTTP();
+            $this->http = new Utils\HTTP();
         }
         return $this->http;
     }
 
     /**
-     * @param ?HTTP $http
+     * @param \SimpleSAML\Utils\HTTP|null $http
      */
-    public function setHttp(?HTTP $http): void
+    public function setHttp(?Utils\HTTP $http): void
     {
         $this->http = $http;
     }

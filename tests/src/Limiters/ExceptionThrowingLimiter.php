@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
 use Exception;
 use SimpleSAML\Module\ratelimit\Limiters\UserPassLimiter;
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 
 class ExceptionThrowingLimiter implements UserPassLimiter
 {
@@ -11,10 +14,10 @@ class ExceptionThrowingLimiter implements UserPassLimiter
      * Called prior to verifying the credentials to determine if the attempt is allowed.
      * @param string $username The username to check
      * @param string $password The password to check
-     * @return string allow|block|continue
+     * @return \SimpleSAML\Module\ratelimit\PreAuthStatusEnum
      * @throws \Exception always thrown
      */
-    public function allow(string $username, string $password): string
+    public function allow(string $username, string $password): PreAuthStatusEnum
     {
         throw new Exception('Boom!');
     }

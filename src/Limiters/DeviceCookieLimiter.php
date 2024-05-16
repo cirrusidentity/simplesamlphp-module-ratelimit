@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\ratelimit\Limiters;
 
-use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
+use SimpleSAML\{Configuration, Logger};
+use SimpleSAML\Module\ratelimit\PreAuthStatusEnum;
 use SimpleSAML\Utils\HTTP;
+
+use function sprintf;
+use function time;
 
 class DeviceCookieLimiter extends UserPassBaseLimiter
 {
@@ -27,18 +32,18 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         return "device-" . $this->checkForDeviceCookie();
     }
 
-    public function allow(string $username, string $password): string
+    public function allow(string $username, string $password): PreAuthStatusEnum
     {
         if (!$this->hasDeviceCookieSet()) {
-            return UserPassBaseLimiter::PREAUTH_CONTINUE;
+            return PreAuthStatusEnum::CONTINUE;
         }
         $key = $this->getRateLimitKey($username, $password);
         /** @var array|null $ret */
         $ret = $this->getStore()->get('array', "ratelimit-$key");
         if ($ret === null) {
-            return UserPassBaseLimiter::PREAUTH_CONTINUE;
+            return PreAuthStatusEnum::CONTINUE;
         }
-        return $ret['user'] === $username ? UserPassBaseLimiter::PREAUTH_ALLOW : UserPassBaseLimiter::PREAUTH_CONTINUE;
+        return $ret['user'] === $username ? PreAuthStatusEnum::ALLOW : PreAuthStatusEnum::CONTINUE;
     }
 
     public function postFailure(string $username, string $password): int
@@ -57,7 +62,10 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         // Only track attempts for device cookies that exist and match the user
         $ret['count']++;
         if ($ret['count'] >= $this->limit) {
-            Logger::debug('Too many failed attempts for device cookie \'' . $this->checkForDeviceCookie() . '\'');
+            Logger::debug(sprintf(
+                'Too many failed attempts for device cookie \'%s\'',
+                $this->checkForDeviceCookie(),
+            ));
             $store->delete('array', "ratelimit-$key");
             $this->setDeviceCookie(null);
         } else {
@@ -94,7 +102,7 @@ class DeviceCookieLimiter extends UserPassBaseLimiter
         $params = array(
             'lifetime' => $this->window,
             'path' => Configuration::getConfig()->getBasePath(),
-            'secure'   => Configuration::getConfig()->getOptionalBoolean('session.cookie.secure', false),
+            'secure' => Configuration::getConfig()->getOptionalBoolean('session.cookie.secure', false),
         );
 
         $this->getHttp()->setCookie(

@@ -1,12 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Test\Module\ratelimit\Limiters;
 
-use CirrusIdentity\SSP\Test\InMemoryStore;
+use PHPUnit\Framework\Attributes\{CoversClass, DataProvider};
+use RuntimeException;
 use SimpleSAML\Configuration;
-use SimpleSAML\Module\ratelimit\Limiters\PasswordStuffingLimiter;
-use SimpleSAML\Module\ratelimit\Limiters\UserPassBaseLimiter;
+use SimpleSAML\Module\ratelimit\Limiters\{PasswordStuffingLimiter, UserPassBaseLimiter};
+use SimpleSAML\TestUtils\InMemoryStore;
+use SimpleSAML\Test\Module\ratelimit\Utils\BaseLimitTest;
 
+use function sleep;
+
+#[CoversClass(PasswordStuffingLimiter::class)]
 class PasswordStuffingLimiterTest extends BaseLimitTest
 {
     protected function getLimiter(array $config): UserPassBaseLimiter
@@ -71,8 +78,8 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     }
 
     /**
-     * @dataProvider saltProvider
      */
+    #[DataProvider('saltProvider')]
     public function testVariousSalts(string $salt): void
     {
         $this->setConfigBasedOnSalt($salt);
@@ -81,7 +88,7 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         $this->assertGreaterThan(strlen('password-'), strlen($key1));
     }
 
-    public function saltProvider(): array
+    public static function saltProvider(): array
     {
         return [
             // 12 seems like minimum salt lenght
@@ -92,8 +99,8 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
     }
 
     /**
-     * @dataProvider badSaltProvider
      */
+    #[DataProvider('badSaltProvider')]
     public function testBadSaltsDoesntResultInBlankKey(string $salt): void
     {
         $this->setConfigBasedOnSalt($salt);
@@ -102,17 +109,18 @@ class PasswordStuffingLimiterTest extends BaseLimitTest
         ]);
         $password = 'p!% *';
 
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unable to generate password hash key');
         $limiter->getRateLimitKey('u1', $password);
     }
 
-    public function badSaltProvider(): array
+    public static function badSaltProvider(): array
     {
         return [
             // too short
             ['a'],
             // special characters
-            ['! /*%√'],
+            ['! /*$√'],
         ];
     }
 }
