@@ -23,11 +23,12 @@
 
 # Overview
 
-This module provides functionality to ratelimit aspects of SSP
+This module provides functionality to rate limit aspects of SSP
 
 # Installation
 
-* SSP 2: Use v2  (currently at v2.0.0-alpha.1)
+* SSP 2.2: Use v3  (currently at v3.0.0)
+* SSP 2.0 or 2.1: Use v2  (currently at v2.0.0-alpha.1)
 * SSP 1: Use v1  (currently at 1.10)
 
     composer require cirrusidentity/simplesamlphp-module-ratelimit
@@ -59,6 +60,8 @@ All included limiters support these 2 settings:
 * window: (string) An ISO8601 duration string for the time window to track limit. Example: PT5M would be 5 minutes. P14D would be 14 days.
 
 Configuration should be done in `authsources.php`. The `RateLimitUserPass` authsource wraps other auth sources to enforce the rate limits. Each of your existing `authsource` definitions should get moved inside the `'delegate'` key.
+
+`limiters` are run in the order defined, and not in numerical order of the keys.
 
 ### Sample Configuration
 
@@ -105,7 +108,9 @@ $config = [
                        '5.6.7.0/24',
                     ],
                ],
-          ]
+          ],
+     ]
+];
 ```
 
 #### Embedded delegate/SSP 1.x style configuration
@@ -154,7 +159,9 @@ $config = [
                        '5.6.7.0/24',
                     ],
                ],
-          ]
+          ],
+     ]
+ ];
 ```
 
 If no `ratelimit` block is defined then the `UsernameLimiter` and `DeviceCookieLimiter`
@@ -202,15 +209,18 @@ docker run -d --name ssp-ratelimit \
   --mount type=bind,source="$(pwd)/tests/docker/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/cert/",target=/var/simplesamlphp/cert/,readonly \
   --mount type=bind,source="$(pwd)/tests/docker/public/looping-login.php",target=/var/simplesamlphp/public/looping-login.php,readonly \
-   -p 443:443 cirrusid/simplesamlphp:v2.0.0
+   -p 443:443 cirrusid/simplesamlphp:v2.2.2
 ```
 
-Then log in as `admin:secret` to https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/core/frontpage_welcome.php
-to confirm things work.
+Then log in as `admin:secret` to https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/
+to confirm SSP is running.
 
 ## Things to try
 
 ### Blocking logins
+
+To reach the `admin` test login endpoints you must first authenticate as an admin. Login to https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/admin
+as `admin:secret`
 
 The [example-userpass](https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test/example-userpass)
 authsource is configured with a low number of attempts for logins. Try logging in 3 or 4 times with the same username and wrong password and
@@ -225,7 +235,7 @@ If you try varying usernames and the same password (a password stuffing attack) 
 ### Loop Detection
 
 Visiting the [looping-login page](https://ratelimit.local.stack-dev.cirrusidentity.com/simplesaml/looping-login.php)
-will issues a request as an SP to login with a local IdP and print out the attributes. User `member`, password `memberpass`.
+will issue a request as an SP to log in with a local IdP and print out the attributes. User `member`, password `memberpass`.
 If you add a `loop` query parameter
 you can mimic a misbehaving SP that continuously sends a user to the IdP to login. The IdP is configured (see `saml20-idp-hosted.php`)
 with loop detection and will display an error page after too many loops.

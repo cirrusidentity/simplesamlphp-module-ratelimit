@@ -1,4 +1,11 @@
 # Changelog
+## v3.0.0
+
+- Require SSP 2.2
+- Support PHP 8.3
+- Drop support for pre-PHP 8.1
+- Fix timing issue in tests
+- Update docs for running with docker image 2.2.2
 
 ## v1.1.0
 
