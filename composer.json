@@ -8,7 +8,7 @@
 
         "simplesamlphp/assert": "~1.8.1",
         "simplesamlphp/composer-module-installer": "~1.4.0",
-        "simplesamlphp/simplesamlphp": "~2.2.0",
+        "simplesamlphp/simplesamlphp": "~2.3",
         "symfony/http-foundation": "^6.4"
     },
     "autoload": {
@@ -30,7 +30,8 @@
             "composer/package-versions-deprecated": true,
             "simplesamlphp/composer-module-installer": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "phpstan/extension-installer": false
+            "phpstan/extension-installer": false,
+            "simplesamlphp/composer-xmlprovider-installer": true
         }
     }
 }
