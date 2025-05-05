@@ -1,4 +1,9 @@
 # Changelog
+
+## v3.0.1
+- Allow wider range of dependencies
+- Tests: use hashed admin password to fix test
+
 ## v3.0.0
 
 - Require SSP 2.2
