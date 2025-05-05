@@ -25,7 +25,8 @@ $config = [
 
     'secretsalt' =>  'donttellanyone',
     //'secretsalt' =>  '!',
-    'auth.adminpassword' => 'secret',
+    //'auth.adminpassword' => 'secret',
+    'auth.adminpassword' => '$argon2id$v=19$m=64,t=4,p=1$dzN3YnVEYTVHLjl0cGNkRw$+s5Y2FPz8ALV7XN029WwUx37QOHjssA8aX1gLXsOhDA',
     'tempdir' => sys_get_temp_dir(),
     'loggingdir'  => sys_get_temp_dir(),
 ];
